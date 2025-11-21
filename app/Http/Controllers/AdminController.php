@@ -295,6 +295,12 @@ class AdminController extends Controller
             'analysis' => $request->analysis,
             'is_premium' => $request->boolean('is_premium'),
             'is_maxodds' => $request->boolean('maxodds_tip'),
+            'today_tip_content' => $request->today_tip_content,
+            'featured_tip_content' => $request->featured_tip_content,
+            'vip_tip_content' => $request->vip_tip_content,
+            'vvip_tip_content' => $request->vvip_tip_content,
+            'surepick_tip_content' => $request->surepick_tip_content,
+            'maxodds_tip_content' => $request->maxodds_tip_content,
         ]);
 
         // Automatically create individual tip entries for each checked category

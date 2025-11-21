@@ -19,6 +19,12 @@ class Prediction extends Model
         'is_premium',
         'is_maxodds',
         'status',
+        'today_tip_content',
+        'featured_tip_content',
+        'vip_tip_content',
+        'vvip_tip_content',
+        'surepick_tip_content',
+        'maxodds_tip_content',
     ];
 
     protected function casts(): array
