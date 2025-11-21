@@ -625,6 +625,48 @@ document.getElementById('country').addEventListener('change', async function() {
     }
 });
 
+// Fetch fixtures from API
+async function fetchFixtures() {
+    console.log('Fetch fixtures function called');
+    
+    const country = document.getElementById('country').value;
+    const league = document.getElementById('league').value;
+    const season = document.getElementById('season').value;
+    const date = document.getElementById('date').value;
+    
+    console.log('Form values:', { country, league, season, date });
+    
+    if (!country || !league || !season || !date) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    showLoadingOverlay();
+    
+    try {
+        const url = `/admin/fixtures/fetch?country=${encodeURIComponent(country)}&league=${encodeURIComponent(league)}&season=${encodeURIComponent(season)}&date=${encodeURIComponent(date)}`;
+        console.log('Fetching from URL:', url);
+        
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.status === 'success') {
+            fetchedFixtures = data.fixtures;
+            displayFixtures(fetchedFixtures);
+            showStep2();
+        } else {
+            alert('Failed to fetch fixtures: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error fetching fixtures:', error);
+        alert('Error fetching fixtures: ' + error.message);
+    } finally {
+        hideLoadingOverlay();
+    }
+}
 
 // Display fetched fixtures
 function displayFixtures(fixtures) {

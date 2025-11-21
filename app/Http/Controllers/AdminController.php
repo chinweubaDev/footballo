@@ -217,195 +217,227 @@ class AdminController extends Controller
 
     public function addFixture(Request $request)
     {
-        //dd( $request);
-        $request->validate([
-            'api_fixture_id' => 'required|integer|unique:fixtures',
-            'league_name' => 'required|string',
-            'league_country' => 'required|string',
-            'league_logo' => 'required|string',
-            'league_flag' => 'required|string',
-            'league_id' => 'required|integer',
-            'season' => 'required|integer',
-            'home_team' => 'required|string',
-            'away_team' => 'required|string',
-            'home_team_id' => 'required|integer',
-            'away_team_id' => 'required|integer',
-            'home_team_logo'  => 'required|string',
-            'away_team_logo'  => 'required|string',
-            'match_date' => 'required|date',
-            'category' => 'required|string',
-            'tip' => 'required|string',
-            'confidence' => 'required|integer|min:1|max:100',
-            'odds' => 'nullable|numeric',
-            'analysis' => 'nullable|string',
-            'today_tip' => 'boolean',
-            'featured' => 'boolean',
-            'maxodds_tip' => 'boolean',
-            'is_premium' => 'boolean',
-            'is_vip' => 'boolean',
-            'is_vvip' => 'boolean',
-            'is_surepick' => 'boolean',
-            // Individual tip content fields
-            'today_tip_content' => 'nullable|string',
-            'featured_tip_content' => 'nullable|string',
-            'vip_tip_content' => 'nullable|string',
-            'vvip_tip_content' => 'nullable|string',
-            'surepick_tip_content' => 'nullable|string',
-            'maxodds_tip_content' => 'nullable|string',
-            // VIP/VVIP Tips validation
-            'tip_type' => 'nullable|in:vip,vvip',
-            'tip_title' => 'nullable|string|max:255',
-            'tip_content' => 'nullable|string',
-            'match_date' => 'nullable|date',
-            'match_time' => 'nullable|date_format:H:i',
-            'is_featured_tip' => 'boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'api_fixture_id' => 'required|integer|unique:fixtures',
+                'league_name' => 'required|string',
+                'league_country' => 'required|string',
+                'league_logo' => 'required|string',
+                'league_flag' => 'required|string',
+                'league_id' => 'required|integer',
+                'season' => 'required|integer',
+                'home_team' => 'required|string',
+                'away_team' => 'required|string',
+                'home_team_id' => 'required|integer',
+                'away_team_id' => 'required|integer',
+                'home_team_logo'  => 'required|string',
+                'away_team_logo'  => 'required|string',
+                'match_date' => 'required|date',
+                'category' => 'required|string',
+                'tip' => 'required|string',
+                'confidence' => 'required|integer|min:1|max:100',
+                'odds' => 'nullable|numeric',
+                'analysis' => 'nullable|string',
+                'today_tip' => 'boolean',
+                'featured' => 'boolean',
+                'maxodds_tip' => 'boolean',
+                'is_premium' => 'boolean',
+                'is_vip' => 'boolean',
+                'is_vvip' => 'boolean',
+                'is_surepick' => 'boolean',
+                // Individual tip content fields
+                'today_tip_content' => 'nullable|string',
+                'featured_tip_content' => 'nullable|string',
+                'vip_tip_content' => 'nullable|string',
+                'vvip_tip_content' => 'nullable|string',
+                'surepick_tip_content' => 'nullable|string',
+                'maxodds_tip_content' => 'nullable|string',
+                // VIP/VVIP Tips validation
+                'tip_type' => 'nullable|in:vip,vvip',
+                'tip_title' => 'nullable|string|max:255',
+                'tip_content' => 'nullable|string',
+                'match_time' => 'nullable|date_format:H:i',
+                'is_featured_tip' => 'boolean',
+            ]);
 
-        // Create fixture
-        $fixture = Fixture::create([
-            'api_fixture_id' => $request->api_fixture_id,
-            'league_name' => $request->league_name,
-            'league_country' => $request->league_country,
-            'league_id' => $request->league_id,
-            'league_logo'  => $request->league_logo,
-            'league_flag'  => $request->league_flag,
-            'season' => $request->season,
-            'home_team' => $request->home_team,
-            'away_team' => $request->away_team,
-            'home_team_logo'  => $request->home_team_logo,
-            'away_team_logo'  => $request->away_team_logo,
-            'home_team_id' => $request->home_team_id,
-            'away_team_id' => $request->away_team_id,
-            'match_date' => $request->match_date,
-            'today_tip' => $request->boolean('today_tip'),
-            'featured' => $request->boolean('featured'),
-            'maxodds_tip' => $request->boolean('maxodds_tip'),
-            'is_vip' => $request->boolean('is_vip'),
-            'is_vvip' => $request->boolean('is_vvip'),
-            'is_surepick' => $request->boolean('is_surepick'),
-        ]);
+            Log::info('Adding fixture', ['request_data' => $validated]);
 
-        // Create prediction
-        Prediction::create([
-            'fixture_id' => $fixture->id,
-            'category' => $request->category,
-            'tip' => $request->tip,
-            'confidence' => $request->confidence,
-            'odds' => $request->odds,
-            'analysis' => $request->analysis,
-            'is_premium' => $request->boolean('is_premium'),
-            'is_maxodds' => $request->boolean('maxodds_tip'),
-            'today_tip_content' => $request->today_tip_content,
-            'featured_tip_content' => $request->featured_tip_content,
-            'vip_tip_content' => $request->vip_tip_content,
-            'vvip_tip_content' => $request->vvip_tip_content,
-            'surepick_tip_content' => $request->surepick_tip_content,
-            'maxodds_tip_content' => $request->maxodds_tip_content,
-        ]);
-
-        // Automatically create individual tip entries for each checked category
-        $categories = [];
-        
-        if ($request->boolean('today_tip')) {
-            $categories[] = [
-                'key' => 'today_tip',
-                'content' => $request->today_tip_content
-            ];
-        }
-        
-        if ($request->boolean('featured')) {
-            $categories[] = [
-                'key' => 'featured',
-                'content' => $request->featured_tip_content
-            ];
-        }
-        
-        if ($request->boolean('is_vip')) {
-            $categories[] = [
-                'key' => 'vip',
-                'content' => $request->vip_tip_content
-            ];
-        }
-        
-        if ($request->boolean('is_vvip')) {
-            $categories[] = [
-                'key' => 'vvip',
-                'content' => $request->vvip_tip_content
-            ];
-        }
-        
-        if ($request->boolean('is_surepick')) {
-            $categories[] = [
-                'key' => 'surepick',
-                'content' => $request->surepick_tip_content
-            ];
-        }
-
-        if ($request->boolean('maxodds_tip')) {
-            $categories[] = [
-                'key' => 'maxodds',
-                'content' => $request->maxodds_tip_content
-            ];
-        }
-
-        // Create a tip entry for each category
-        foreach ($categories as $categoryData) {
-            $category = $categoryData['key'];
-            $customContent = $categoryData['content'];
-            
-            $tipType = in_array($category, ['vip', 'vvip']) ? $category : 'vip';
-            
-            $title = $this->generateTipTitle($category, $request->home_team, $request->away_team);
-            
-            // Use custom content if provided, otherwise generate default content
-            $content = !empty($customContent) 
-                ? $customContent 
-                : $this->generateTipContent($request, $category);
-            
-            Tip::create([
-                'title' => $title,
-                'content' => $content,
-                'type' => $tipType,
-                'category' => $category,
-                'fixture_id' => $fixture->api_fixture_id,
+            // Create fixture
+            $fixture = Fixture::create([
+                'api_fixture_id' => $request->api_fixture_id,
                 'league_name' => $request->league_name,
+                'league_country' => $request->league_country,
+                'league_id' => $request->league_id,
+                'league_logo'  => $request->league_logo,
+                'league_flag'  => $request->league_flag,
+                'season' => $request->season,
                 'home_team' => $request->home_team,
                 'away_team' => $request->away_team,
+                'home_team_logo'  => $request->home_team_logo,
+                'away_team_logo'  => $request->away_team_logo,
+                'home_team_id' => $request->home_team_id,
+                'away_team_id' => $request->away_team_id,
                 'match_date' => $request->match_date,
-                'match_time' => $request->match_time ?? date('H:i', strtotime($request->match_date)),
-                'prediction' => $request->tip,
-                'odds' => $request->odds,
-                'status' => 'pending',
-                'is_featured' => $category === 'featured',
-                'is_active' => true,
+                'today_tip' => $request->boolean('today_tip'),
+                'featured' => $request->boolean('featured'),
+                'maxodds_tip' => $request->boolean('maxodds_tip'),
+                'is_vip' => $request->boolean('is_vip'),
+                'is_vvip' => $request->boolean('is_vvip'),
+                'is_surepick' => $request->boolean('is_surepick'),
             ]);
-        }
 
-        // Legacy: Create VIP/VVIP tip if specified with old method
-        if ($request->filled('tip_type') && $request->filled('tip_title') && $request->filled('tip_content')) {
-            Tip::create([
-                'title' => $request->tip_title,
-                'content' => $request->tip_content,
-                'type' => $request->tip_type,
-                'category' => $request->tip_type,
-                'fixture_id' => $fixture->api_fixture_id,
-                'league_name' => $request->league_name,
-                'home_team' => $request->home_team,
-                'away_team' => $request->away_team,
-                'match_date' => $request->match_date,
-                'match_time' => $request->match_time,
-                'prediction' => $request->tip,
+            Log::info('Fixture created successfully', ['fixture_id' => $fixture->id]);
+
+            // Create prediction
+            Prediction::create([
+                'fixture_id' => $fixture->id,
+                'category' => $request->category,
+                'tip' => $request->tip,
+                'confidence' => $request->confidence,
                 'odds' => $request->odds,
-                'status' => 'pending',
-                'is_featured' => $request->boolean('is_featured_tip'),
-                'is_active' => true,
+                'analysis' => $request->analysis,
+                'is_premium' => $request->boolean('is_premium'),
+                'is_maxodds' => $request->boolean('maxodds_tip'),
+                'today_tip_content' => $request->today_tip_content,
+                'featured_tip_content' => $request->featured_tip_content,
+                'vip_tip_content' => $request->vip_tip_content,
+                'vvip_tip_content' => $request->vvip_tip_content,
+                'surepick_tip_content' => $request->surepick_tip_content,
+                'maxodds_tip_content' => $request->maxodds_tip_content,
             ]);
-        }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Fixture and prediction added successfully' . (count($categories) > 0 ? ' with ' . count($categories) . ' tip(s)' : '')
-        ]);
+            Log::info('Prediction created successfully');
+
+            // Automatically create individual tip entries for each checked category
+            $categories = [];
+            
+            if ($request->boolean('today_tip')) {
+                $categories[] = [
+                    'key' => 'today_tip',
+                    'content' => $request->today_tip_content
+                ];
+            }
+            
+            if ($request->boolean('featured')) {
+                $categories[] = [
+                    'key' => 'featured',
+                    'content' => $request->featured_tip_content
+                ];
+            }
+            
+            if ($request->boolean('is_vip')) {
+                $categories[] = [
+                    'key' => 'vip',
+                    'content' => $request->vip_tip_content
+                ];
+            }
+            
+            if ($request->boolean('is_vvip')) {
+                $categories[] = [
+                    'key' => 'vvip',
+                    'content' => $request->vvip_tip_content
+                ];
+            }
+            
+            if ($request->boolean('is_surepick')) {
+                $categories[] = [
+                    'key' => 'surepick',
+                    'content' => $request->surepick_tip_content
+                ];
+            }
+
+            if ($request->boolean('maxodds_tip')) {
+                $categories[] = [
+                    'key' => 'maxodds',
+                    'content' => $request->maxodds_tip_content
+                ];
+            }
+
+            // Create a tip entry for each category
+            foreach ($categories as $categoryData) {
+                $category = $categoryData['key'];
+                $customContent = $categoryData['content'];
+                
+                $tipType = in_array($category, ['vip', 'vvip']) ? $category : 'vip';
+                
+                $title = $this->generateTipTitle($category, $request->home_team, $request->away_team);
+                
+                // Use custom content if provided, otherwise generate default content
+                $content = !empty($customContent) 
+                    ? $customContent 
+                    : $this->generateTipContent($request, $category);
+                
+                Tip::create([
+                    'title' => $title,
+                    'content' => $content,
+                    'type' => $tipType,
+                    'category' => $category,
+                    'fixture_id' => $fixture->api_fixture_id,
+                    'league_name' => $request->league_name,
+                    'home_team' => $request->home_team,
+                    'away_team' => $request->away_team,
+                    'match_date' => $request->match_date,
+                    'match_time' => $request->match_time ?? date('H:i', strtotime($request->match_date)),
+                    'prediction' => $request->tip,
+                    'odds' => $request->odds,
+                    'status' => 'pending',
+                    'is_featured' => $category === 'featured',
+                    'is_active' => true,
+                ]);
+            }
+
+            Log::info('Tips created successfully', ['count' => count($categories)]);
+
+            // Legacy: Create VIP/VVIP tip if specified with old method
+            if ($request->filled('tip_type') && $request->filled('tip_title') && $request->filled('tip_content')) {
+                Tip::create([
+                    'title' => $request->tip_title,
+                    'content' => $request->tip_content,
+                    'type' => $request->tip_type,
+                    'category' => $request->tip_type,
+                    'fixture_id' => $fixture->api_fixture_id,
+                    'league_name' => $request->league_name,
+                    'home_team' => $request->home_team,
+                    'away_team' => $request->away_team,
+                    'match_date' => $request->match_date,
+                    'match_time' => $request->match_time,
+                    'prediction' => $request->tip,
+                    'odds' => $request->odds,
+                    'status' => 'pending',
+                    'is_featured' => $request->boolean('is_featured_tip'),
+                    'is_active' => true,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Fixture and prediction added successfully' . (count($categories) > 0 ? ' with ' . count($categories) . ' tip(s)' : '')
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error in addFixture', [
+                'errors' => $e->errors(),
+                'message' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed: ' . implode(', ', array_map(function($errors) {
+                    return implode(', ', $errors);
+                }, $e->errors()))
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Error adding fixture', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to add fixture: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

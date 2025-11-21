@@ -38,8 +38,18 @@ class HomeController extends Controller
             ->orderBy('date', 'desc')
             ->limit(10)
             ->get();
+        
+        // Get Sure Picks tips with fixture data for logos
+        $surePicksTips = \App\Models\Tip::leftJoin('fixtures', 'tips.fixture_id', '=', 'fixtures.api_fixture_id')
+            ->where('tips.category', 'surepick')
+            ->where('tips.is_active', true)
+            ->whereDate('tips.match_date', '>=', today())
+            ->orderBy('tips.match_date')
+            ->limit(5)
+            ->select('tips.*', 'fixtures.home_team_logo', 'fixtures.away_team_logo', 'fixtures.league_logo')
+            ->get();
     
-        return view('home', compact('todayTipsByLeague', 'featuredByLeague', 'vipResults', 'vvipResults'));
+        return view('home', compact('todayTipsByLeague', 'featuredByLeague', 'vipResults', 'vvipResults', 'surePicksTips'));
     }
     
 }

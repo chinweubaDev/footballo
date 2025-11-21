@@ -72,69 +72,81 @@
                         <h5 class="card-title">Sure Picks Tips</h5>
                     </div>
                     <div class="">
-                        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out border border-gray-200">
+                        @forelse($surePicksTips as $tip)
+                        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out border border-gray-200 mb-3">
                             <!-- Match Header -->
                             <div class="p-4 border-b border-gray-200">
                                 <div class="flex items-center justify-between mb-2">
-                                    <h4 class="font-bold text-gray-900 text-lg">Elche</h4>
+                                    <div class="flex items-center">
+                                        @if($tip->home_team_logo)
+                                        <img src="{{ $tip->home_team_logo }}" alt="{{ $tip->home_team }}" class="w-8 h-8 mr-2">
+                                        @endif
+                                        <h4 class="font-bold text-gray-900 text-lg">{{ $tip->home_team }}</h4>
+                                    </div>
                                     <span class="text-gray-500 text-sm">vs</span>
-                                    <h4 class="font-bold text-gray-900 text-lg">Real Sociedad</h4>
+                                    <div class="flex items-center">
+                                        <h4 class="font-bold text-gray-900 text-lg">{{ $tip->away_team }}</h4>
+                                        @if($tip->away_team_logo)
+                                        <img src="{{ $tip->away_team_logo }}" alt="{{ $tip->away_team }}" class="w-8 h-8 ml-2">
+                                        @endif
+                                    </div>
                                 </div>
                                 <div class="flex items-center justify-between text-sm text-gray-600">
-                                    <span>Nov 07, 2025</span>
-                                    <span class="font-medium">20:00</span>
+                                    <span>{{ $tip->match_date->format('M d, Y') }}</span>
+                                    <span class="font-medium">{{ $tip->match_time ? $tip->match_time->format('H:i') : '-' }}</span>
                                 </div>
                             </div>
 
                             <!-- Prediction Details -->
                             <div class="p-4">
                                 <div class="flex items-center justify-between mb-3">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                        Over/Under
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Sure Pick
                                     </span>
-
+                                    @if($tip->odds)
+                                    <span class="text-lg font-bold text-primary-600">{{ number_format($tip->odds, 2) }}</span>
+                                    @endif
                                 </div>
 
-                                <!-- 1X2 Odds Display -->
+                                <!-- Prediction Tip -->
                                 <div class="mb-3">
-                                    <div class="text-sm text-gray-600 mb-2">1X2 Odds:</div>
-                                    <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2">
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">1</div>
-                                            <div class="font-bold text-green-600">1.32</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">X</div>
-                                            <div class="font-bold text-blue-600">1.06</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">2</div>
-                                            <div class="font-bold text-red-600">1.58</div>
-                                        </div>
-                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">Prediction:</div>
+                                    <div class="font-bold text-gray-900 text-lg">{{ $tip->prediction }}</div>
                                 </div>
 
-                                <!-- Confidence Bar -->
-                                <div class="mb-3">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-sm text-gray-600">Confidence</span>
-                                        <span class="text-sm font-medium text-gray-900">90%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 90%"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Analysis -->
-
-                                <!-- Type Badges -->
+                                <!-- League Info -->
                                 <div class="flex flex-wrap gap-2">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-chart-line mr-1"></i>Over/Under
+                                        @if($tip->league_logo)
+                                        <img src="{{ $tip->league_logo }}" alt="{{ $tip->league_name }}" class="w-4 h-4 mr-1">
+                                        @else
+                                        <i class="fas fa-trophy mr-1"></i>
+                                        @endif
+                                        {{ $tip->league_name }}
                                     </span>
+                                    @if($tip->is_featured)
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        <i class="fas fa-star mr-1"></i>Featured
+                                    </span>
+                                    @endif
                                 </div>
+
+                                <!-- Content Preview -->
+                                @if($tip->content)
+                                <div class="mt-3 pt-3 border-t border-gray-100">
+                                    <p class="text-sm text-gray-600 line-clamp-2">{{ Str::limit($tip->content, 100) }}</p>
+                                </div>
+                                @endif
                             </div>
                         </div>
+                        @empty
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <i class="fas fa-info-circle text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-gray-600">No sure picks available at the moment.</p>
+                            <p class="text-sm text-gray-500 mt-1">Check back soon for new tips!</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
