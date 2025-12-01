@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Home - Football Predictions')
+@section('title', 'Dashboard - Daily Predictions')
+@section('meta_description', 'View today\'s top football predictions and betting tips. Access your personalized dashboard for the latest match analysis.')
+@section('meta_keywords', 'dashboard, daily tips, my predictions, betting analysis, football stats')
 <!-- Bootstrap CSS -->
 <link 
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 

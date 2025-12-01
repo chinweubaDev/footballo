@@ -1,12 +1,3 @@
-@extends('layouts.app')
-
-@section('title', $category . ' Predictions')
-
-@section('content')
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-900 mb-4">
                 <i class="fas fa-chart-line text-blue-600 mr-3"></i>
                 {{ $category }} Predictions

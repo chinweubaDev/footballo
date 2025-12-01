@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Tip;
+use App\Models\Fixture;
 
 class TipsController extends Controller
 {
@@ -20,11 +20,11 @@ class TipsController extends Controller
             return redirect()->route('pricing')->with('error', 'You need an active VIP subscription to access VIP tips.');
         }
 
-        // Fetch VIP tips from database
-        $tips = Tip::vip()
-            ->active()
-            ->orderBy('is_featured', 'desc')
-            ->orderBy('created_at', 'desc')
+        // Fetch VIP fixtures from database
+        $tips = Fixture::vip()
+            ->with('predictions')
+            ->where('match_date', '>=', now()->subHours(2)) // Show current/future matches
+            ->orderBy('match_date', 'asc')
             ->paginate(10);
 
         return view('tips.vip', compact('tips'));
@@ -42,11 +42,11 @@ class TipsController extends Controller
             return redirect()->route('pricing')->with('error', 'You need an active VVIP subscription to access VVIP tips.');
         }
 
-        // Fetch VVIP tips from database
-        $tips = Tip::vvip()
-            ->active()
-            ->orderBy('is_featured', 'desc')
-            ->orderBy('created_at', 'desc')
+        // Fetch VVIP fixtures from database
+        $tips = Fixture::vvip()
+            ->with('predictions')
+            ->where('match_date', '>=', now()->subHours(2))
+            ->orderBy('match_date', 'asc')
             ->paginate(10);
 
         return view('tips.vvip', compact('tips'));

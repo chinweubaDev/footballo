@@ -4,7 +4,24 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>Best Football Predictions & Betting Tips - {{ config('app.name', 'Laravel') }}</title>
+        <meta name="description" content="Get accurate daily football predictions, betting tips, and expert analysis. Join our community of winners and maximize your betting profits today.">
+        <meta name="keywords" content="football predictions, soccer betting tips, daily predictions, expert analysis, betting strategy, winning tips">
+        <link rel="canonical" href="{{ url()->current() }}">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="Best Football Predictions & Betting Tips - Join Winners">
+        <meta property="og:description" content="Get accurate daily football predictions, betting tips, and expert analysis. Join our community of winners and maximize your betting profits today.">
+        <meta property="og:image" content="{{ asset('images/og-image.jpg') }}">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{ url()->current() }}">
+        <meta property="twitter:title" content="Best Football Predictions & Betting Tips - Join Winners">
+        <meta property="twitter:description" content="Get accurate daily football predictions, betting tips, and expert analysis. Join our community of winners and maximize your betting profits today.">
+        <meta property="twitter:image" content="{{ asset('images/og-image.jpg') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

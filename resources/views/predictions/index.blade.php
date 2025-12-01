@@ -1,12 +1,3 @@
-@extends('layouts.app')
-
-@section('title', 'All Predictions - Football Predictions')
-
-@section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">All Predictions</h1>

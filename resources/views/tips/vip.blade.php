@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'VIP Tips - Premium Football Predictions')
+@section('title', 'VIP Tips')
+@section('meta_description', 'Join our VIP club for exclusive daily football tips. Enjoy high strike rates and professional betting advice.')
+@section('meta_keywords', 'vip tips, exclusive predictions, pro betting, daily winners, subscription tips')
 
 @section('content')
 <!-- VIP Header -->
@@ -91,8 +93,8 @@
                             <!-- VIP Tips from Database -->
                             <div class="space-y-6">
                                 @foreach($tips as $tip)
-                                <div class="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 {{ $tip->is_featured ? 'ring-2 ring-blue-500' : '' }}" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                                    @if($tip->is_featured)
+                                <div class="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 {{ $tip->featured ? 'ring-2 ring-blue-500' : '' }}" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                                    @if($tip->featured)
                                     <div class="flex items-center mb-4">
                                         <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
                                             <i class="fas fa-star mr-1"></i>Featured
@@ -109,40 +111,29 @@
                                                 <span class="text-sm text-slate-600">{{ $tip->league_name }}</span>
                                             @endif
                                         </div>
-                                        @if($tip->prediction)
-                                            <span class="text-sm font-semibold text-slate-900 bg-slate-100 px-3 py-1 rounded-full">{{ $tip->prediction }}</span>
+                                        @if($tip->predictions->isNotEmpty())
+                                            <span class="text-sm font-semibold text-slate-900 bg-slate-100 px-3 py-1 rounded-full">{{ $tip->predictions->first()->tip }}</span>
                                         @endif
                                     </div>
                                     
-                                    <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $tip->title }}</h3>
+                                    <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $tip->home_team }} vs {{ $tip->away_team }}</h3>
                                     
-                                    @if($tip->home_team && $tip->away_team)
-                                        <div class="bg-slate-50 rounded-xl p-4 mb-4">
-                                            <h4 class="text-lg font-semibold text-slate-800 text-center">{{ $tip->home_team }} vs {{ $tip->away_team }}</h4>
-                                        </div>
+                                    @if($tip->predictions->isNotEmpty() && $tip->predictions->first()->vip_tip_content)
+                                        <p class="text-slate-600 mb-4 leading-relaxed">{{ $tip->predictions->first()->vip_tip_content }}</p>
                                     @endif
-                                    
-                                    <p class="text-slate-600 mb-4 leading-relaxed">{{ $tip->content }}</p>
                                     
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-4">
-                                            @if($tip->match_date && $tip->match_time)
-                                                <span class="text-sm text-slate-500 flex items-center">
-                                                    <i class="fas fa-calendar mr-2"></i>
-                                                    {{ $tip->match_date->format('M d, Y') }} at {{ $tip->match_time }}
-                                                </span>
-                                            @else
-                                                <span class="text-sm text-slate-500 flex items-center">
-                                                    <i class="fas fa-clock mr-2"></i>
-                                                    {{ $tip->created_at->format('M d, Y H:i') }}
-                                                </span>
-                                            @endif
+                                            <span class="text-sm text-slate-500 flex items-center">
+                                                <i class="fas fa-calendar mr-2"></i>
+                                                {{ $tip->match_date->format('M d, Y H:i') }}
+                                            </span>
                                         </div>
                                         
                                         <div class="flex items-center space-x-3">
-                                            @if($tip->odds)
+                                            @if($tip->predictions->isNotEmpty() && $tip->predictions->first()->odds)
                                                 <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                                                    Odds: {{ $tip->odds }}
+                                                    Odds: {{ $tip->predictions->first()->odds }}
                                                 </span>
                                             @endif
                                             

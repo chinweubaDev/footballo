@@ -6,7 +6,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="user-authenticated" content="{{ auth()->check() ? 'true' : 'false' }}">
 
-    <title>{{ config('app.name', 'Laravel') }} - @yield('title', 'Football Predictions')</title>
+    <title>@yield('title', 'Football Predictions') - {{ config('app.name', 'Laravel') }}</title>
+    <meta name="description" content="@yield('meta_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors with our accurate daily forecasts.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'football predictions, betting tips, soccer analysis, sports betting, daily tips, vip predictions')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="@yield('og_url', url()->current())">
+    <meta property="og:title" content="@yield('og_title', config('app.name', 'Football Predictions'))">
+    <meta property="og:description" content="@yield('og_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="@yield('og_url', url()->current())">
+    <meta property="twitter:title" content="@yield('og_title', config('app.name', 'Football Predictions'))">
+    <meta property="twitter:description" content="@yield('og_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors.')">
+    <meta property="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,15 +89,12 @@
                         <!-- Logo -->
                         <div class="flex-shrink-0 flex items-center">
                             <a href="{{ route('home') }}" class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-                                    <i class="fas fa-futbol text-white text-lg"></i>
+                                <div class="">
+                                   
+<img src="{{ asset('logo.png') }}" alt="Logo" class="" width="200">
+                                
                                 </div>
-                                <div>
-                                    <h1 class="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                                        Football Predictions
-                                    </h1>
-                                    <p class="text-xs text-slate-500 -mt-1">Expert Analysis</p>
-                                </div>
+                              
                             </a>
                         </div>
 
@@ -329,11 +343,11 @@
                     <div>
                         <h4 class="text-lg font-semibold mb-6">Support</h4>
                         <ul class="space-y-3">
-                            <li><a href="#" class="text-slate-300 hover:text-white transition-colors duration-200">Contact Us</a></li>
-                            <li><a href="#" class="text-slate-300 hover:text-white transition-colors duration-200">FAQ</a></li>
-                            <li><a href="#" class="text-slate-300 hover:text-white transition-colors duration-200">Terms of Service</a></li>
-                            <li><a href="#" class="text-slate-300 hover:text-white transition-colors duration-200">Privacy Policy</a></li>
-                            <li><a href="#" class="text-slate-300 hover:text-white transition-colors duration-200">Refund Policy</a></li>
+                            <li><a href="{{ route('contact') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Contact Us</a></li>
+                            <li><a href="{{ route('faq') }}" class="text-slate-300 hover:text-white transition-colors duration-200">FAQ</a></li>
+                            <li><a href="{{ route('terms') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Terms of Service</a></li>
+                            <li><a href="{{ route('privacy') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Privacy Policy</a></li>
+                            <li><a href="{{ route('refund') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Refund Policy</a></li>
                         </ul>
                     </div>
                 </div>

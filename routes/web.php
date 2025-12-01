@@ -20,6 +20,14 @@ Route::get('/maxodds-tips', [PredictionController::class, 'maxodds'])->name('max
 Route::get('/pricing', [PricingController::class, 'index'])->name('pricing');
 Route::get('/pricing/country', [PricingController::class, 'getPricingByCountryAjax'])->name('pricing.country');
 
+// Static pages
+Route::view('/support', 'support')->name('support');
+Route::view('/contact', 'contact')->name('contact');
+Route::view('/faq', 'faq')->name('faq');
+Route::view('/terms', 'terms')->name('terms');
+Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/refund', 'refund')->name('refund');
+
 // Debug route for testing payment (remove in production)
 Route::get('/debug/payment', function() {
     return response()->json([

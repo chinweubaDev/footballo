@@ -115,4 +115,19 @@ public function scopeFeatured($query)
     {
         return $query->whereBetween('match_date', [$from, $to]);
     }
+    /**
+     * Scope for VIP fixtures.
+     */
+    public function scopeVip($query)
+    {
+        return $query->where('is_vip', true);
+    }
+
+    /**
+     * Scope for VVIP fixtures.
+     */
+    public function scopeVvip($query)
+    {
+        return $query->where('is_vvip', true);
+    }
 }

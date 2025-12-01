@@ -1,11 +1,3 @@
-@extends('layouts.app')
-
-@section('title', 'Maxodds Tips - Football Predictions')
-
-@section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Header -->
         <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg shadow-xl p-6 mb-8 text-white">
             <div class="flex items-center justify-between">
                 <div>
