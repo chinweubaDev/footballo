@@ -1,133 +1,133 @@
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                <i class="fas fa-chart-line text-blue-600 mr-3"></i>
-                {{ $category }} Predictions
-            </h1>
-            <p class="text-xl text-gray-600">Expert predictions for {{ $category }} betting markets</p>
-        </div>
+@extends('layouts.app')
 
-        <!-- Category Navigation -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Browse by Category</h2>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <a href="{{ route('predictions') }}" class="flex items-center justify-center p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-150 ease-in-out">
-                    <i class="fas fa-list text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">All</span>
+@section('title', $category . ' Predictions')
+
+@section('content')
+<div class="bg-slate-50 min-h-screen pb-20">
+    <!-- Category Hero -->
+    <section class="relative bg-slate-900 pt-32 pb-32 overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, #3b82f6 1px, transparent 0); background-size: 30px 30px;"></div>
+        </div>
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/20 blur-[100px] rounded-full"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center" data-aos="zoom-out">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-3xl mb-8 text-blue-400">
+                @php
+                    $icon = match($category) {
+                        'Over 1.5' => 'fa-arrow-up',
+                        'Over 2.5' => 'fa-chevron-up',
+                        'Double Chance' => 'fa-exchange-alt',
+                        'Both Teams to Score' => 'fa-futbol',
+                        'Draw' => 'fa-equals',
+                        default => 'fa-chart-line'
+                    };
+                @endphp
+                <i class="fas {{ $icon }} text-3xl"></i>
+            </div>
+            <h1 class="text-4xl lg:text-6xl font-black text-white mb-6">{{ $category }} Predictions</h1>
+            <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                Expert insights and mathematical models tailored specifically for the {{ $category }} betting market.
+            </p>
+        </div>
+    </section>
+
+    <!-- Category Switcher (Sticky Navigation) -->
+    <div class="sticky top-20 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center space-x-1 overflow-x-auto py-4 no-scrollbar">
+                <a href="{{ route('predictions') }}" class="px-5 py-2.5 rounded-2xl text-sm font-bold transition-all text-slate-500 hover:bg-slate-50 whitespace-nowrap">
+                    All Markets
                 </a>
-                <a href="{{ route('predictions.over15') }}" class="flex items-center justify-center p-3 {{ $category == 'Over 1.5' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 hover:bg-gray-200' }} rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-arrow-up text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">Over 1.5</span>
-                </a>
-                <a href="{{ route('predictions.over25') }}" class="flex items-center justify-center p-3 {{ $category == 'Over 2.5' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 hover:bg-gray-200' }} rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-arrow-up text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">Over 2.5</span>
-                </a>
-                <a href="{{ route('predictions.double-chance') }}" class="flex items-center justify-center p-3 {{ $category == 'Double Chance' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 hover:bg-gray-200' }} rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-exchange-alt text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">Double Chance</span>
-                </a>
-                <a href="{{ route('predictions.bts') }}" class="flex items-center justify-center p-3 {{ $category == 'Both Teams to Score' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 hover:bg-gray-200' }} rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-futbol text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">BTS</span>
-                </a>
-                <a href="{{ route('predictions.draw') }}" class="flex items-center justify-center p-3 {{ $category == 'Draw' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 hover:bg-gray-200' }} rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-equals text-gray-600 mr-2"></i>
-                    <span class="text-sm font-medium">Draw</span>
-                </a>
+                <span class="w-px h-4 bg-slate-200 mx-2"></span>
+                @php
+                    $categories = [
+                        ['route' => 'predictions.over15', 'label' => 'Over 1.5', 'val' => 'Over 1.5'],
+                        ['route' => 'predictions.over25', 'label' => 'Over 2.5', 'val' => 'Over 2.5'],
+                        ['route' => 'predictions.double-chance', 'label' => 'Double Chance', 'val' => 'Double Chance'],
+                        ['route' => 'predictions.bts', 'label' => 'BTS', 'val' => 'Both Teams to Score'],
+                        ['route' => 'predictions.draw', 'label' => 'Draw', 'val' => 'Draw'],
+                    ];
+                @endphp
+                @foreach($categories as $cat)
+                    <a href="{{ route($cat['route']) }}" class="px-5 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap {{ $category == $cat['val'] ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/20' : 'text-slate-600 hover:bg-slate-50' }}">
+                        {{ $cat['label'] }}
+                    </a>
+                @endforeach
             </div>
         </div>
+    </div>
 
-        <!-- Predictions by League -->
+    <!-- Predictions List -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         @if($fixturesByLeague->count() > 0)
             @foreach($fixturesByLeague as $leagueName => $fixtures)
-            <div class="mb-8">
-                <div class="flex items-center mb-6">
-                    <i class="fas fa-trophy text-yellow-500 text-2xl mr-3"></i>
-                    <h2 class="text-xl font-bold text-gray-800">{{ $leagueName }}</h2>
-                    <span class="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                        {{ $fixtures->count() }} matches
-                    </span>
+            <div class="mb-12" data-aos="fade-up">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-10 h-10 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center">
+                        <img src="{{ $fixtures[0]->league_logo }}" class="w-6 h-6 object-contain opacity-80">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">{{ $fixtures[0]->league_country }}</span>
+                        <h2 class="text-xl font-black text-slate-900 leading-tight">{{ $leagueName }}</h2>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach($fixtures as $fixture)
                         @foreach($fixture->predictions as $prediction)
-                        <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out border border-gray-200">
-                            <!-- Match Header -->
-                            <div class="p-4 border-b border-gray-200">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h4 class="font-bold text-gray-900 text-lg">{{ $fixture->home_team }}</h4>
-                                    <span class="text-gray-500 text-sm">vs</span>
-                                    <h4 class="font-bold text-gray-900 text-lg">{{ $fixture->away_team }}</h4>
+                        <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group ring-1 ring-slate-100 flex flex-col h-full">
+                            <!-- Match Time/Meta -->
+                            <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-50">
+                                <span class="bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg">
+                                    {{ $prediction->category }}
+                                </span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
+                                    <i class="far fa-clock mr-1.5 text-blue-500"></i>
+                                    {{ $fixture->match_date->format('H:i') }}
+                                </span>
+                            </div>
+
+                            <!-- Match Content -->
+                            <div class="flex items-center justify-between space-x-4 mb-8">
+                                <div class="flex-1 text-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center p-2 mb-3 mx-auto border border-slate-100 group-hover:bg-white transition-colors shadow-inner">
+                                        <img src="{{ $fixture->home_team_logo }}" class="w-full h-full object-contain">
+                                    </div>
+                                    <span class="text-xs font-extrabold text-slate-800 line-clamp-1">{{ $fixture->home_team }}</span>
                                 </div>
-                                <div class="flex items-center justify-between text-sm text-gray-600">
-                                    <span>{{ $fixture->match_date->format('M d, Y') }}</span>
-                                    <span class="font-medium">{{ $fixture->match_date->format('H:i') }}</span>
+                                <div class="px-2 text-[10px] font-black text-slate-200">VS</div>
+                                <div class="flex-1 text-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center p-2 mb-3 mx-auto border border-slate-100 group-hover:bg-white transition-colors shadow-inner">
+                                        <img src="{{ $fixture->away_team_logo }}" class="w-full h-full object-contain">
+                                    </div>
+                                    <span class="text-xs font-extrabold text-slate-800 line-clamp-1">{{ $fixture->away_team }}</span>
                                 </div>
                             </div>
 
-                            <!-- Prediction Details -->
-                            <div class="p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                        {{ $prediction->category }}
-                                    </span>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                        {{ $prediction->tip }}
-                                    </span>
+                            <!-- Prediction Footer -->
+                            <div class="mt-auto">
+                                <div class="bg-slate-900 rounded-3xl p-5 mb-6 text-center transform transition-all group-hover:scale-105 duration-300 shadow-xl shadow-slate-900/10">
+                                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-2">Expert Tip</span>
+                                    <span class="text-2xl font-black text-white italic">"{{ $prediction->tip }}"</span>
                                 </div>
 
-                                <!-- 1X2 Odds Display -->
-                                <div class="mb-3">
-                                    <div class="text-sm text-gray-600 mb-2">1X2 Odds:</div>
-                                    <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2">
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">1</div>
-                                            <div class="font-bold text-green-600">{{ $prediction->odds ?? '2.10' }}</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">X</div>
-                                            <div class="font-bold text-blue-600">{{ number_format(($prediction->odds ?? 2.10) * 0.8, 2) }}</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="text-xs text-gray-500">2</div>
-                                            <div class="font-bold text-red-600">{{ number_format(($prediction->odds ?? 2.10) * 1.2, 2) }}</div>
-                                        </div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence Level</span>
+                                    <span class="text-xs font-black text-blue-600">{{ $prediction->confidence }}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-1.5 p-0.5 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-0.5 rounded-full transition-all duration-700 shadow-sm" style="width: {{ $prediction->confidence }}%"></div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="text-lg font-black text-slate-900">{{ $prediction->odds ?? '1.85' }}</div>
+                                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Odds</div>
                                     </div>
-                                </div>
-
-                                <!-- Confidence Bar -->
-                                <div class="mb-3">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-sm text-gray-600">Confidence</span>
-                                        <span class="text-sm font-medium text-gray-900">{{ $prediction->confidence }}%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: {{ $prediction->confidence }}%"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Analysis -->
-                                @if($prediction->analysis)
-                                <div class="mb-3">
-                                    <p class="text-sm text-gray-600 italic">"{{ $prediction->analysis }}"</p>
-                                </div>
-                                @endif
-
-                                <!-- Type Badges -->
-                                <div class="flex flex-wrap gap-2">
-                                    @if($prediction->is_premium)
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            <i class="fas fa-crown mr-1"></i>Premium
-                                        </span>
-                                    @endif
-                                    @if($prediction->is_maxodds)
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                            <i class="fas fa-star mr-1"></i>Maxodds
-                                        </span>
-                                    @endif
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-chart-line mr-1"></i>{{ $prediction->category }}
-                                    </span>
+                                    <button class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                        <i class="fas fa-plus text-xs"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -137,33 +137,52 @@
             </div>
             @endforeach
         @else
-        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
-            <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">No {{ $category }} Predictions Found</h3>
-            <p class="text-gray-600">Check back later for new {{ $category }} predictions.</p>
-        </div>
+            <!-- Empty State -->
+            <div class="bg-white rounded-[4rem] p-24 text-center shadow-2xl border border-slate-100 max-w-4xl mx-auto">
+                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <i class="fas fa-search-dollar text-blue-400 text-3xl"></i>
+                </div>
+                <h3 class="text-3xl font-black text-slate-900 mb-4">No {{ $category }} Tips Yet</h3>
+                <p class="text-slate-500 text-lg mb-10">Our analysts are scouring the markets for the best {{ $category }} value today. New selections appear here as soon as they're confirmed.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                     <a href="{{ route('predictions') }}" class="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all">
+                        View All Markets
+                     </a>
+                     <a href="{{ route('home') }}" class="px-8 py-4 bg-white border border-slate-200 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all">
+                        Homepage
+                     </a>
+                </div>
+            </div>
         @endif
+    </div>
 
-        <!-- Pagination -->
-        @if(isset($fixtures) && method_exists($fixtures, 'hasPages') && $fixtures->hasPages())
-        <div class="mt-8">
-            {{ $fixtures->links() }}
-        </div>
-        @endif
-
-        <!-- Call to Action -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg shadow-xl p-8 mt-12 text-white text-center">
-            <h2 class="text-3xl font-bold mb-4">Want More {{ $category }} Predictions?</h2>
-            <p class="text-xl mb-6">Get access to exclusive {{ $category }} predictions with higher accuracy rates.</p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('premium.tips') }}" class="bg-yellow-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition duration-150 ease-in-out">
-                    <i class="fas fa-crown mr-2"></i>Premium Tips
-                </a>
-                <a href="{{ route('pricing') }}" class="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-150 ease-in-out">
-                    <i class="fas fa-credit-card mr-2"></i>Subscribe Now
-                </a>
+    <!-- CTA Section -->
+    <section class="mt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-[3.5rem] p-12 lg:p-20 text-white text-center shadow-2xl shadow-blue-500/30 overflow-hidden relative">
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+            <div class="relative z-10" data-aos="fade-up">
+                <h2 class="text-3xl lg:text-5xl font-black mb-6">Master the {{ $category }} Market</h2>
+                <p class="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">Unlock access to our high-margin algorithm that predicts {{ $category }} outcomes with up to 95% accuracy.</p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                    <a href="{{ route('premium.tips') }}" class="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-lg hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <i class="fas fa-crown mr-3"></i> Get VIP Tips
+                    </a>
+                    <a href="{{ route('pricing') }}" class="bg-blue-500/50 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all">
+                        <i class="fas fa-credit-card mr-3"></i> Premium Plans
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
 @endsection

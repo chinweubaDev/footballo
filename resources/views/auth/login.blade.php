@@ -3,81 +3,127 @@
 @section('title', 'Login - Football Predictions')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
-                <i class="fas fa-futbol text-green-600 text-xl"></i>
-            </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Sign in to your account
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Or
-                <a href="{{ route('register') }}" class="font-medium text-green-600 hover:text-green-500">
-                    create a new account
-                </a>
-            </p>
+<div class="min-h-[calc(100vh-80px)] flex flex-col lg:flex-row bg-slate-50">
+    <!-- Left Side: Visual/Branding (Hidden on mobile) -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 to-primary-900 items-center justify-center p-12 text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
         </div>
-        <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
-            @csrf
-            <div class="rounded-md shadow-sm -space-y-px">
-                <div>
-                    <label for="email" class="sr-only">Email address</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required 
-                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm @error('email') border-red-500 @enderror" 
-                           placeholder="Email address" value="{{ old('email') }}">
-                    @error('email')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+        <div class="relative z-10 max-w-lg" data-aos="fade-right">
+            <div class="mb-8">
+                <div class="w-16 h-16 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center mb-6 ring-1 ring-white/30">
+                    <i class="fas fa-futbol text-3xl"></i>
                 </div>
-                <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required 
-                           class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm @error('password') border-red-500 @enderror" 
-                           placeholder="Password">
-                    @error('password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <h1 class="text-5xl font-extrabold mb-6 leading-tight">Welcome Back to <br><span class="text-primary-300">Winning!</span></h1>
+                <p class="text-xl text-primary-100 leading-relaxed mb-8">Access your expert football predictions, VIP tips, and detailed match analysis. Your journey to better betting continues here.</p>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center space-x-4 p-4 rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                    <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <i class="fas fa-check text-green-400"></i>
+                    </div>
+                    <span class="text-lg">85%+ Accuracy on VIP Tips</span>
                 </div>
+                <div class="flex items-center space-x-4 p-4 rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+                    <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <i class="fas fa-bolt text-blue-400"></i>
+                    </div>
+                    <span class="text-lg">Real-time Match Updates</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Login Form -->
+    <div class="flex-1 flex items-center justify-center p-8 lg:p-16">
+        <div class="max-w-md w-full" data-aos="fade-up">
+            <div class="text-center lg:text-left mb-10">
+                <h2 class="text-4xl font-extrabold text-slate-900 mb-3">Sign In</h2>
+                <p class="text-slate-500 text-lg">New to Football Predictions? 
+                    <a href="{{ route('register') }}" class="text-primary-600 font-semibold hover:underline">Create an account</a>
+                </p>
             </div>
 
-            <div class="flex items-center justify-between">
+            <form class="space-y-6" method="POST" action="{{ route('login') }}">
+                @csrf
+                
+                <div class="space-y-5">
+                    <!-- Email Field -->
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">Email Address</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                            </div>
+                            <input id="email" name="email" type="email" autocomplete="email" required 
+                                   class="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all @error('email') border-red-500 @enderror" 
+                                   placeholder="Enter your email" value="{{ old('email') }}">
+                        </div>
+                        @error('email')
+                            <p class="mt-2 text-sm text-red-600 flex items-center italic">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2 ml-1">
+                            <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
+                            <a href="#" class="text-sm font-medium text-primary-600 hover:text-primary-700">Forgot password?</a>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                            </div>
+                            <input id="password" name="password" type="password" autocomplete="current-password" required 
+                                   class="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all @error('password') border-red-500 @enderror" 
+                                   placeholder="••••••••">
+                        </div>
+                        @error('password')
+                            <p class="mt-2 text-sm text-red-600 flex items-center italic">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                </div>
+
                 <div class="flex items-center">
                     <input id="remember" name="remember" type="checkbox" 
-                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-900">
-                        Remember me
+                           class="h-5 w-5 text-primary-600 focus:ring-primary-500 border-slate-300 rounded-lg transition-all cursor-pointer">
+                    <label for="remember" class="ml-3 block text-sm text-slate-600 cursor-pointer">
+                        Keep me signed in for 30 days
                     </label>
                 </div>
 
-                <div class="text-sm">
-                    <a href="#" class="font-medium text-green-600 hover:text-green-500">
-                        Forgot your password?
-                    </a>
-                </div>
-            </div>
-
-            <div>
                 <button type="submit" 
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <i class="fas fa-lock text-green-500 group-hover:text-green-400"></i>
-                    </span>
-                    Sign in
+                        class="w-full flex justify-center items-center py-4 px-6 border border-transparent text-base font-bold rounded-2xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-4 focus:ring-primary-500/30 transform transition-all active:scale-[0.98] shadow-lg shadow-primary-500/25">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Sign In to Account
                 </button>
-            </div>
 
-            @if($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <ul class="list-disc list-inside">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-        </form>
+                @if($errors->any())
+                    <div class="p-4 bg-red-50 border border-red-100 rounded-2xl" data-aos="shake">
+                        <ul class="space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li class="text-sm text-red-700 flex items-center">
+                                    <span class="w-1.5 h-1.5 bg-red-400 rounded-full mr-2"></span>
+                                    {{ $error }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </form>
+
+            <div class="mt-10 pt-10 border-t border-slate-100">
+                <p class="text-center text-slate-400 text-sm italic">
+                    By signing in, you agree to our 
+                    <a href="#" class="text-slate-600 hover:underline">Terms of Service</a> & 
+                    <a href="#" class="text-slate-600 hover:underline">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
+

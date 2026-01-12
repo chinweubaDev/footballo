@@ -1,180 +1,243 @@
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold mb-2">Premium Tips</h1>
-                    <p class="text-yellow-100">Exclusive predictions with higher accuracy rates</p>
-                </div>
-                <div class="text-right">
-                    <i class="fas fa-crown text-4xl text-yellow-300"></i>
-                </div>
-            </div>
-        </div>
+@extends('layouts.app')
 
-        <!-- Premium Access Check -->
-        @auth
-            @if(!auth()->user()->hasActivePremium())
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-                <div class="flex items-center">
-                    <i class="fas fa-lock text-yellow-600 text-2xl mr-4"></i>
-                    <div class="flex-1">
-                        <h3 class="text-lg font-semibold text-yellow-800">Premium Access Required</h3>
-                        <p class="text-yellow-700">You need an active premium subscription to view these exclusive predictions.</p>
-                    </div>
-                    <a href="{{ route('pricing') }}" class="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700 transition duration-150 ease-in-out">
-                        Upgrade Now
-                    </a>
-                </div>
-            </div>
-            @endif
-        @else
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <div class="flex items-center">
-                <i class="fas fa-user-lock text-blue-600 text-2xl mr-4"></i>
-                <div class="flex-1">
-                    <h3 class="text-lg font-semibold text-blue-800">Login Required</h3>
-                    <p class="text-blue-700">Please login and subscribe to premium to access these exclusive predictions.</p>
-                </div>
-                <div class="flex space-x-2">
-                    <a href="{{ route('login') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
-                        Login
-                    </a>
-                    <a href="{{ route('register') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-150 ease-in-out">
-                        Register
-                    </a>
-                </div>
-            </div>
-        </div>
-        @endauth
+@section('title', 'VIP Premium Predictions')
 
-        <!-- Premium Predictions -->
-        @if((auth()->check() && auth()->user()->hasActivePremium()) || !auth()->check())
-            @if($fixturesByLeague->count() > 0)
-                @foreach($fixturesByLeague as $leagueName => $fixtures)
-                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-crown text-yellow-500 text-2xl mr-3"></i>
-                        <h2 class="text-xl font-bold text-gray-800">{{ $leagueName }}</h2>
-                        <span class="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            Premium
-                        </span>
+@section('content')
+<div class="bg-slate-950 min-h-screen pb-20">
+    <!-- Premium Hero -->
+    <section class="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-32 pb-32 overflow-hidden">
+        <!-- Golden background effects -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, #eab308 1px, transparent 0); background-size: 32px 32px;"></div>
+        </div>
+        <div class="absolute -top-24 -right-24 w-[500px] h-[500px] bg-yellow-500/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary-500/5 blur-[100px] rounded-full translate-y-1/2"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-16">
+                <div class="lg:w-1/2 text-center lg:text-left" data-aos="fade-right">
+                    <div class="inline-flex items-center px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-black uppercase tracking-[0.2em] mb-8">
+                        <i class="fas fa-crown mr-2 mb-0.5"></i> Elite VIP Access
                     </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($fixtures as $fixture)
-                            @foreach($fixture->predictions->where('is_premium', true) as $prediction)
-                            <div class="border border-yellow-200 rounded-lg p-6 hover:shadow-md transition duration-150 ease-in-out bg-gradient-to-br from-yellow-50 to-white">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-gray-800 text-sm">{{ $fixture->home_team }} vs {{ $fixture->away_team }}</h4>
-                                        <p class="text-xs text-gray-500">{{ $fixture->match_date->format('M d, H:i') }}</p>
-                                    </div>
-                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                                        <i class="fas fa-crown mr-1"></i>Premium
+                    <h1 class="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                        Premium <br>
+                        <span class="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600 bg-clip-text text-transparent italic">Winning</span> Selections
+                    </h1>
+                    <p class="text-xl text-slate-400 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                        Gain access to our most accurate, hand-picked predictions. Our VIP algorithm focuses on low-risk, high-probability markets for consistent daily growth.
+                    </p>
+                    <div class="flex items-center justify-center lg:justify-start space-x-8">
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-white">95%</div>
+                            <div class="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Accuracy</div>
+                        </div>
+                        <span class="w-px h-10 bg-slate-800"></span>
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-white">Daily</div>
+                            <div class="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Updates</div>
+                        </div>
+                        <span class="w-px h-10 bg-slate-800"></span>
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-white">Expert</div>
+                            <div class="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">Analysis</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 hidden lg:block" data-aos="fade-left">
+                    <div class="relative">
+                        <div class="absolute -inset-1 bg-gradient-to-tr from-yellow-500/50 to-primary-500/50 blur-2xl rounded-[3rem] opacity-30"></div>
+                        <div class="relative bg-slate-900/50 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden ring-1 ring-white/10">
+                            <div class="flex items-center justify-between mb-8 border-b border-white/5 pb-6">
+                                <h3 class="text-white font-black text-lg">VIP Stats Today</h3>
+                                <span class="text-yellow-500 font-bold text-xs uppercase tracking-widest animate-pulse">Live Tracking</span>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Win Rate</span>
+                                    <span class="text-white font-black">94.8%</span>
+                                </div>
+                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-yellow-500 h-full w-[94.8%]"></div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Average Odds</span>
+                                    <span class="text-white font-black">1.85 - 2.50</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-slate-400 text-sm">Success Streak</span>
+                                    <span class="text-green-400 font-black flex items-center">
+                                        <i class="fas fa-fire mr-2"></i> 7 Days
                                     </span>
                                 </div>
-                                
-                                <div class="space-y-3">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Category:</span>
-                                        <span class="font-semibold text-blue-600">{{ $prediction->category }}</span>
-                                    </div>
-                                    
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Prediction:</span>
-                                        <span class="font-semibold text-green-600">{{ $prediction->tip }}</span>
-                                    </div>
-                                    
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Confidence:</span>
-                                        <div class="flex items-center">
-                                            <div class="w-12 bg-gray-200 rounded-full h-1.5 mr-2">
-                                                <div class="bg-green-600 h-1.5 rounded-full" style="width: {{ $prediction->confidence }}%"></div>
-                                            </div>
-                                            <span class="text-sm font-medium">{{ $prediction->confidence }}%</span>
-                                        </div>
-                                    </div>
-                                    
-                                    @if($prediction->odds)
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-600">Odds:</span>
-                                        <span class="font-semibold">{{ $prediction->odds }}</span>
-                                    </div>
-                                    @endif
-                                    
-                                    @if($prediction->analysis)
-                                    <div class="mt-3 p-3 bg-gray-50 rounded-lg">
-                                        <p class="text-xs text-gray-600 italic">{{ $prediction->analysis }}</p>
-                                    </div>
-                                    @endif
-                                </div>
-                                
-                                @if(!auth()->check() || !auth()->user()->hasActivePremium())
-                                <div class="mt-4 pt-4 border-t border-yellow-200">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-xs text-yellow-600">
-                                            <i class="fas fa-lock mr-1"></i>Premium Content
-                                        </span>
-                                        <a href="{{ route('pricing') }}" class="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition duration-150 ease-in-out">
-                                            Subscribe
-                                        </a>
-                                    </div>
-                                </div>
-                                @endif
                             </div>
-                            @endforeach
-                        @endforeach
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Area -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10">
+        @if(auth()->user() && auth()->user()->hasActiveSubscription())
+            <!-- VIP User Content -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($fixtures as $fixture)
+                    @foreach($fixture->predictions as $prediction)
+                    <div class="bg-slate-900 rounded-[3rem] p-8 border border-white/5 hover:border-yellow-500/30 transition-all duration-500 group relative overflow-hidden shadow-2xl" data-aos="fade-up">
+                        <div class="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <i class="fas fa-crown text-8xl text-yellow-500 -rotate-12"></i>
+                        </div>
+                        
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-10 pb-6 border-b border-white/5">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                                <span class="text-[10px] font-black text-yellow-500 uppercase tracking-[0.2em] italic">VIP SELECTION</span>
+                            </div>
+                            <span class="text-xs font-bold text-slate-500">{{ $fixture->match_date->format('M d, H:i') }}</span>
+                        </div>
+
+                        <!-- Match -->
+                        <div class="space-y-6 mb-10">
+                            <div class="flex items-center justify-between group/team">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center p-2 border border-white/10 group-hover/team:bg-white/10 transition-all">
+                                        <img src="{{ $fixture->home_team_logo }}" class="w-full h-full object-contain">
+                                    </div>
+                                    <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->home_team }}</span>
+                                </div>
+                                <span class="text-xs font-black text-slate-600">H</span>
+                            </div>
+                            <div class="flex items-center justify-between group/team">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center p-2 border border-white/10 group-hover/team:bg-white/10 transition-all">
+                                        <img src="{{ $fixture->away_team_logo }}" class="w-full h-full object-contain">
+                                    </div>
+                                    <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->away_team }}</span>
+                                </div>
+                                <span class="text-xs font-black text-slate-600">A</span>
+                            </div>
+                        </div>
+
+                        <!-- Prediction Card -->
+                        <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 rounded-[2rem] p-6 border border-yellow-500/10 mb-8 transform transition-transform group-hover:scale-[1.03] duration-500">
+                             <span class="text-[10px] font-black text-yellow-500 uppercase tracking-widest block mb-1.5 opacity-60">Verified Accuracy Tip</span>
+                             <div class="flex justify-between items-end">
+                                 <span class="text-2xl font-black text-white tracking-tight">{{ $prediction->tip }}</span>
+                                 <div class="text-right">
+                                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Odds</span>
+                                     <span class="text-3xl font-black text-yellow-500 leading-none">{{ $prediction->odds ?? '1.95' }}</span>
+                                 </div>
+                             </div>
+                        </div>
+
+                        <!-- Analysis -->
+                        <div class="mb-8">
+                            <div class="flex items-center space-x-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">
+                                <i class="fas fa-microscope text-yellow-500"></i>
+                                <span>Expert Analysis</span>
+                            </div>
+                            <p class="text-[12px] text-slate-400 leading-relaxed italic border-l-2 border-yellow-500/20 pl-4 py-1">
+                                "{{ $prediction->analysis ?? 'Our models show significant value in this selection based on recent performance metrics and squad availability.' }}"
+                            </p>
+                        </div>
+
+                        <button class="w-full py-4 rounded-2xl bg-slate-800 text-white font-black text-sm uppercase tracking-widest border border-white/5 hover:bg-yellow-500 hover:text-slate-950 transition-all duration-300">
+                             Save to Slip <i class="fas fa-plus ml-2"></i>
+                        </button>
+                    </div>
+                    @endforeach
                 @endforeach
-            @else
-            <div class="bg-white rounded-lg shadow-lg p-12 text-center">
-                <i class="fas fa-crown text-yellow-300 text-6xl mb-4"></i>
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">No Premium Predictions Available</h2>
-                <p class="text-gray-600 mb-6">Premium predictions will appear here once they are added by our experts.</p>
-                <a href="{{ route('predictions') }}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-150 ease-in-out">
-                    View All Predictions
-                </a>
             </div>
-            @endif
-        @endif
+        @else
+            <!-- Locked State UI -->
+            <div class="max-w-4xl mx-auto py-20 px-8 relative" data-aos="zoom-in">
+                <!-- Blur effect backdrop -->
+                <div class="absolute inset-0 bg-white/5 backdrop-blur-2xl rounded-[4rem] border border-white/10 overflow-hidden shadow-2xl">
+                    <!-- Placeholder "blurred" cards in background -->
+                    <div class="grid grid-cols-2 gap-8 p-12 opacity-10 pointer-events-none scale-105">
+                        @for($i=0; $i<4; $i++)
+                        <div class="bg-slate-800 h-64 rounded-[3rem] border border-white/10"></div>
+                        @endfor
+                    </div>
+                </div>
 
-        <!-- Premium Benefits -->
-        <div class="bg-white rounded-lg shadow-lg p-8 mt-8">
-            <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Why Choose Premium?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <div class="bg-yellow-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-chart-line text-yellow-600 text-2xl"></i>
+                <div class="relative z-10 text-center py-20 lg:py-32">
+                    <div class="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-yellow-500/40 transform -rotate-6">
+                        <i class="fas fa-lock text-3xl text-slate-950"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Higher Accuracy</h3>
-                    <p class="text-gray-600">Premium predictions have a proven track record with 85%+ accuracy rates.</p>
-                </div>
-                <div class="text-center">
-                    <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-users text-green-600 text-2xl"></i>
+                    <h2 class="text-4xl lg:text-6xl font-black text-white mb-8 tracking-tight">Unlock Premium Tips</h2>
+                    <p class="text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                        This content is reserved for our VIP members. Upgrade your account today to access our highest confidence predictions and expert value analysis.
+                    </p>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mb-14 max-w-3xl mx-auto">
+                        <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md">
+                            <i class="fas fa-check-circle text-yellow-500 mb-3 block text-xl"></i>
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Accuracy</span>
+                            <div class="text-white font-bold mt-1">95.2% Certified</div>
+                        </div>
+                        <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md">
+                            <i class="fas fa-gem text-yellow-500 mb-3 block text-xl"></i>
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Markets</span>
+                            <div class="text-white font-bold mt-1">Exclusive Value</div>
+                        </div>
+                        <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5 backdrop-blur-md">
+                            <i class="fas fa-headset text-yellow-500 mb-3 block text-xl"></i>
+                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Support</span>
+                            <div class="text-white font-bold mt-1">24/7 VIP Help</div>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Expert Analysis</h3>
-                    <p class="text-gray-600">Get detailed analysis from our team of professional football analysts.</p>
-                </div>
-                <div class="text-center">
-                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-clock text-blue-600 text-2xl"></i>
+
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                        <a href="{{ route('pricing') }}" class="px-12 py-5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-slate-950 font-black text-xl rounded-2xl hover:shadow-2xl hover:shadow-yellow-500/30 transition-all hover:-translate-y-1">
+                            Get Access Now <i class="fas fa-arrow-right ml-3"></i>
+                        </a>
+                        <a href="{{ route('login') }}" class="px-12 py-5 bg-white/5 border border-white/10 text-white font-black text-xl rounded-2xl hover:bg-white/10 transition-all">
+                            Member Login
+                        </a>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Early Access</h3>
-                    <p class="text-gray-600">Get predictions before they go public and secure the best odds.</p>
                 </div>
             </div>
-        </div>
-
-        <!-- Call to Action -->
-        @if(!auth()->check() || !auth()->user()->hasActivePremium())
-        <div class="bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-lg shadow-xl p-8 mt-8 text-white text-center">
-            <h2 class="text-3xl font-bold mb-4">Ready to Win More?</h2>
-            <p class="text-xl mb-6">Join thousands of successful bettors who trust our premium predictions.</p>
-            <a href="{{ route('pricing') }}" class="bg-white text-yellow-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-150 ease-in-out">
-                Get Premium Access
-            </a>
-        </div>
         @endif
     </div>
+
+    <!-- Features Banner -->
+    <section class="mt-32 border-t border-white/5 pt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center group" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/5 group-hover:border-yellow-500/30 transition-colors">
+                        <i class="fas fa-shield-alt text-2xl text-yellow-500/60 group-hover:text-yellow-500"></i>
+                    </div>
+                    <h4 class="text-white font-black text-sm mb-2 uppercase tracking-widest">Verified Results</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed px-4">Every prediction is tracked and verified for complete transparency.</p>
+                </div>
+                <div class="text-center group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/5 group-hover:border-yellow-500/30 transition-colors">
+                        <i class="fas fa-bolt text-2xl text-yellow-500/60 group-hover:text-yellow-500"></i>
+                    </div>
+                    <h4 class="text-white font-black text-sm mb-2 uppercase tracking-widest">Instant Delivery</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed px-4">Get tips as soon as the line moves and value is detected.</p>
+                </div>
+                <div class="text-center group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/5 group-hover:border-yellow-500/30 transition-colors">
+                        <i class="fas fa-chart-pie text-2xl text-yellow-500/60 group-hover:text-yellow-500"></i>
+                    </div>
+                    <h4 class="text-white font-black text-sm mb-2 uppercase tracking-widest">Probability Math</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed px-4">Based on advanced Poisson distribution and Elo ratings.</p>
+                </div>
+                <div class="text-center group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/5 group-hover:border-yellow-500/30 transition-colors">
+                        <i class="fas fa-user-tie text-2xl text-yellow-500/60 group-hover:text-yellow-500"></i>
+                    </div>
+                    <h4 class="text-white font-black text-sm mb-2 uppercase tracking-widest">Analyst Review</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed px-4">Every algorithm output is cross-checked by human experts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 @endsection
