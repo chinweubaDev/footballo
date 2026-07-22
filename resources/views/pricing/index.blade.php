@@ -3,211 +3,256 @@
 @section('title', 'Pricing Plans - Football Predictions')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">Choose Your VIP Plan</h1>
-            <p class="text-xl text-gray-600 mb-6">Get access to exclusive VIP and VVIP predictions and expert analysis</p>
-            
+<div class="bg-slate-950 min-h-screen pb-20">
+    <!-- Pricing Hero -->
+    <section class="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-24 pb-20 overflow-hidden">
+        <!-- Background effects -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, #3b82f6 1px, transparent 0); background-size: 32px 32px;"></div>
+        </div>
+        <div class="absolute -top-24 -right-24 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary-500/5 blur-[100px] rounded-full translate-y-1/2"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-[0.2em] mb-8" data-aos="fade-down">
+                <i class="fas fa-gem mr-2"></i> Premium Access
+            </div>
+            <h1 class="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight" data-aos="fade-up">
+                Elevate Your <br>
+                <span class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent italic">Winning Strategy</span>
+            </h1>
+            <p class="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                Choose a plan that fits your betting style. Get access to expert analysis, high-confidence tips, and exclusive VIP markets.
+            </p>
+
             <!-- Country Selection -->
-            <div class="mb-6">
-                <label for="countrySelect" class="block text-sm font-medium text-gray-700 mb-2">Select Your Country</label>
-                <select id="countrySelect" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    @foreach($availableCountries as $key => $label)
-                        <option value="{{ $key }}" {{ $selectedCountry === $key ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
+            <div class="flex flex-col items-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="relative group">
+                    <label for="countrySelect" class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 text-center">Select Your Location</label>
+                    <div class="relative">
+                        <select id="countrySelect" class="appearance-none bg-slate-900/50 border border-white/10 text-white text-sm font-bold rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-6 pr-12 py-4 backdrop-blur-xl transition-all hover:bg-slate-800/80 cursor-pointer">
+                            @foreach($availableCountries as $key => $label)
+                                <option value="{{ $key }}" {{ $selectedCountry === $key ? 'selected' : '' }} class="bg-slate-900">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-500">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 inline-flex items-center px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold">
+                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                    Displaying prices in <span id="currentCountry" class="text-white ml-1">{{ $selectedCountry }}</span>
+                </div>
             </div>
-            
-            <div class="inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                <i class="fas fa-map-marker-alt mr-2"></i>
-                Pricing for <span id="currentCountry">{{ $selectedCountry }}</span>
+        </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+
+                <!-- VIP Plans Section -->
+        <div class="mb-20">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h2 class="text-3xl font-black text-white mb-4 uppercase tracking-tighter">VIP Plans</h2>
+                <div class="w-20 h-1 bg-blue-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach($pricingPlans->filter(fn($plan) => Str::startsWith($plan->key, 'vip_')) as $plan)
+                @php
+                    $features = is_string($plan->features) ? json_decode($plan->features, true) : $plan->features;
+                    $isPopular = $plan->key === 'vip_1_month';
+                @endphp
+
+                <div id="plan-{{ $plan->key }}" 
+                     class="group relative bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border {{ $isPopular ? 'border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.1)]' : 'border-white/5' }} hover:border-blue-500/30 transition-all duration-500 {{ $isPopular ? 'md:scale-105 z-10' : '' }}"
+                     data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                     
+                    @if($isPopular)
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">Most Popular</span>
+                    </div>
+                    @endif
+
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-widest mb-4">
+                            VIP Standard
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-4">
+                            {{ $plan->name }}
+                        </h3>
+                        <div class="flex items-baseline justify-center gap-1 mb-2" id="price-{{ $plan->key }}">
+                            <span class="text-lg font-bold text-slate-500 currency-{{ $plan->key }}">{{ $plan->getCurrencyForCountry($selectedCountry) }}</span>
+                            <span class="text-5xl font-black text-white amount-{{ $plan->key }} tracking-tighter">{{ number_format($plan->getPriceForCountry($selectedCountry)) }}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            {{ $plan->duration_days }} Days Unlimited access
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 mb-10">
+                        @if(!empty($features))
+                            @foreach($features as $feature)
+                            <div class="flex items-center space-x-3 text-slate-400 group-hover:text-slate-300 transition-colors">
+                                <div class="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-[10px] text-blue-500"></i>
+                                </div>
+                                <span class="text-sm font-medium">{{ $feature }}</span>
+                            </div>
+                            @endforeach
+                        @else
+                            <p class="text-sm text-slate-600 italic text-center">Standard VIP benefits apply</p>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('payment.methods', [
+                        'plan' => $plan->key,
+                        'amount' => $plan->getPriceForCountry($selectedCountry),
+                        'currency' => $plan->getCurrencyForCountry($selectedCountry)
+                    ]) }}" 
+                       class="w-full py-4 rounded-2xl {{ $isPopular ? 'bg-blue-600 hover:bg-blue-500' : 'bg-slate-800 hover:bg-slate-700' }} text-white font-black text-sm uppercase tracking-[0.1em] transition-all duration-300 text-center block shadow-lg hover:shadow-blue-500/20 link-{{ $plan->key }}">
+                        Get Started <i class="fas fa-arrow-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- VIP Plans Section -->
-<div class="mb-16">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">VIP Plans</h2>
-        <p class="text-lg text-gray-600">Premium football predictions and expert analysis</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        @foreach($pricingPlans->filter(fn($plan) => Str::startsWith($plan->key, 'vip_')) as $plan)
-        @php
-            $features = is_string($plan->features) ? json_decode($plan->features, true) : $plan->features;
-        @endphp
-
-        <div id="plan-{{ $plan->key }}" 
-             class="bg-white rounded-lg shadow-lg p-6 relative {{ $plan->key === 'vip_1_month' ? 'ring-2 ring-blue-500 transform scale-105' : '' }}">
-             
-            @if($plan->key === 'vip_1_month')
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span class="bg-blue-500 text-white text-xs font-medium px-3 py-1 rounded-full">Most Popular</span>
-            </div>
-            @endif
-
-            <div class="text-center mb-6">
-                <div class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full inline-block mb-3">
-                    VIP
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                    {{ $plan->name }}
-                </h3>
-                <div class="text-3xl font-bold text-gray-900 mb-1" id="price-{{ $plan->key }}">
-                    <span class="currency-{{ $plan->key }}">{{ $plan->getCurrencyForCountry($selectedCountry) }}</span> <span class="amount-{{ $plan->key }}">{{ number_format($plan->getPriceForCountry($selectedCountry)) }}</span>
-                </div>
-                <p class="text-sm text-gray-500">
-                    {{ $plan->duration_days }} days access
-                </p>
+        <!-- VVIP Plans Section -->
+        <div class="mb-20">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h2 class="text-3xl font-black text-white mb-4 uppercase tracking-tighter">VVIP Elite Plans</h2>
+                <div class="w-20 h-1 bg-purple-600 mx-auto rounded-full"></div>
             </div>
 
-            <ul class="space-y-3 mb-6">
-                @if(!empty($features))
-                    @foreach($features as $feature)
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-blue-500 mr-3"></i>
-                        <span class="text-sm text-gray-600">{{ $feature }}</span>
-                    </li>
-                    @endforeach
-                @else
-                    <li class="text-sm text-gray-400 italic">No features listed</li>
-                @endif
-            </ul>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach($pricingPlans->filter(fn($plan) => Str::startsWith($plan->key, 'vvip_')) as $plan)
+                @php
+                    $features = is_string($plan->features) ? json_decode($plan->features, true) : $plan->features;
+                    $isPopular = $plan->key === 'vvip_1_month';
+                @endphp
 
-            <a href="{{ route('payment.methods', [
-                'plan' => $plan->key,
-                'amount' => $plan->getPriceForCountry($selectedCountry),
-                'currency' => $plan->getCurrencyForCountry($selectedCountry)
-            ]) }}" 
-               class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out font-semibold text-center block link-{{ $plan->key }}">
-                Subscribe Now
-            </a>
+                <div id="plan-{{ $plan->key }}" 
+                     class="group relative bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border {{ $isPopular ? 'border-purple-500/50 shadow-[0_0_40px_rgba(168,85,247,0.1)]' : 'border-white/5' }} hover:border-purple-500/30 transition-all duration-500 {{ $isPopular ? 'md:scale-105 z-10' : '' }}"
+                     data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                     
+                    @if($isPopular)
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">Most Popular</span>
+                    </div>
+                    @endif
+
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-black uppercase tracking-widest mb-4">
+                            VVIP Elite Access
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-4">
+                            {{ $plan->name }}
+                        </h3>
+                        <div class="flex items-baseline justify-center gap-1 mb-2" id="price-{{ $plan->key }}">
+                            <span class="text-lg font-bold text-slate-500 currency-{{ $plan->key }}">{{ $plan->getCurrencyForCountry($selectedCountry) }}</span>
+                            <span class="text-5xl font-black text-white amount-{{ $plan->key }} tracking-tighter">{{ number_format($plan->getPriceForCountry($selectedCountry)) }}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            {{ $plan->duration_days }} Days Unlimited access
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 mb-10">
+                        @if(!empty($features))
+                            @foreach($features as $feature)
+                            <div class="flex items-center space-x-3 text-slate-400 group-hover:text-slate-300 transition-colors">
+                                <div class="w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-crown text-[10px] text-purple-500"></i>
+                                </div>
+                                <span class="text-sm font-medium">{{ $feature }}</span>
+                            </div>
+                            @endforeach
+                        @else
+                            <p class="text-sm text-slate-600 italic text-center">Elite VVIP benefits apply</p>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('payment.methods', [
+                        'plan' => $plan->key,
+                        'amount' => $plan->getPriceForCountry($selectedCountry),
+                        'currency' => $plan->getCurrencyForCountry($selectedCountry)
+                    ]) }}" 
+                       class="w-full py-4 rounded-2xl {{ $isPopular ? 'bg-purple-600 hover:bg-purple-500' : 'bg-slate-800 hover:bg-slate-700' }} text-white font-black text-sm uppercase tracking-[0.1em] transition-all duration-300 text-center block shadow-lg hover:shadow-purple-500/20 link-{{ $plan->key }}">
+                        Get Started <i class="fas fa-arrow-right ml-2 text-[10px]"></i>
+                    </a>
+                </div>
+                @endforeach
+            </div>
         </div>
-        @endforeach
-    </div>
-</div>
-
-<!-- VVIP Plans Section -->
-<div class="mb-16">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">VVIP Plans</h2>
-        <p class="text-lg text-gray-600">Ultimate premium predictions with exclusive access</p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        @foreach($pricingPlans->filter(fn($plan) => Str::startsWith($plan->key, 'vvip_')) as $plan)
-        @php
-            $features = is_string($plan->features) ? json_decode($plan->features, true) : $plan->features;
-        @endphp
-
-        <div id="plan-{{ $plan->key }}" 
-             class="bg-white rounded-lg shadow-lg p-6 relative {{ $plan->key === 'vvip_1_month' ? 'ring-2 ring-purple-500 transform scale-105' : '' }}">
-             
-            @if($plan->key === 'vvip_1_month')
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span class="bg-purple-500 text-white text-xs font-medium px-3 py-1 rounded-full">Most Popular</span>
-            </div>
-            @endif
-
-            <div class="text-center mb-6">
-                <div class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full inline-block mb-3">
-                    VVIP
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                    {{ $plan->name }}
-                </h3>
-                <div class="text-3xl font-bold text-gray-900 mb-1" id="price-{{ $plan->key }}">
-                    <span class="currency-{{ $plan->key }}">{{ $plan->getCurrencyForCountry($selectedCountry) }}</span> <span class="amount-{{ $plan->key }}">{{ number_format($plan->getPriceForCountry($selectedCountry)) }}</span>
-                </div>
-                <p class="text-sm text-gray-500">
-                    {{ $plan->duration_days }} days access
-                </p>
-            </div>
-
-            <ul class="space-y-3 mb-6">
-                @if(!empty($features))
-                    @foreach($features as $feature)
-                    <li class="flex items-center">
-                        <i class="fas fa-check text-purple-500 mr-3"></i>
-                        <span class="text-sm text-gray-600">{{ $feature }}</span>
-                    </li>
-                    @endforeach
-                @else
-                    <li class="text-sm text-gray-400 italic">No features listed</li>
-                @endif
-            </ul>
-
-            <a href="{{ route('payment.methods', [
-                'plan' => $plan->key,
-                'amount' => $plan->getPriceForCountry($selectedCountry),
-                'currency' => $plan->getCurrencyForCountry($selectedCountry)
-            ]) }}" 
-               class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition duration-150 ease-in-out font-semibold text-center block link-{{ $plan->key }}">
-                Subscribe Now
-            </a>
-        </div>
-        @endforeach
-    </div>
-</div>
 
 
 
 
         <!-- Features Section -->
-        <div class="bg-white rounded-lg shadow-lg p-8 mb-12">
-            <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">What You Get</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+        <div class="bg-slate-900/50 backdrop-blur-xl rounded-[3rem] p-12 border border-white/5 mb-20" data-aos="fade-up">
+            <h2 class="text-3xl font-black text-white text-center mb-16 uppercase tracking-widest">Why Choose Our Premium Plans</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20 group-hover:bg-blue-500 transition-all duration-300">
+                        <i class="fas fa-chart-line text-blue-500 text-2xl group-hover:text-white"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Expert Analysis</h3>
-                    <p class="text-gray-600">Get detailed analysis from our team of football experts with years of experience.</p>
+                    <h3 class="text-lg font-black text-white mb-3 uppercase tracking-tighter">Precision Analysis</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Our proprietary algorithms analyze over 1,000 data points per match to ensure maximum accuracy.</p>
                 </div>
-                <div class="text-center">
-                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-bullseye text-blue-600 text-2xl"></i>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-green-500/20 group-hover:bg-green-500 transition-all duration-300">
+                        <i class="fas fa-bullseye text-green-500 text-2xl group-hover:text-white"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">High Accuracy</h3>
-                    <p class="text-gray-600">Our predictions have a proven track record with high win rates and consistent results.</p>
+                    <h3 class="text-lg font-black text-white mb-3 uppercase tracking-tighter">High Win Rate</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Historically verified results with a consistent track record of success across all leagues.</p>
                 </div>
-                <div class="text-center">
-                    <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-purple-500/20 group-hover:bg-purple-500 transition-all duration-300">
+                        <i class="fas fa-clock text-purple-500 text-2xl group-hover:text-white"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Real-time Updates</h3>
-                    <p class="text-gray-600">Get instant notifications and updates on your favorite matches and predictions.</p>
+                    <h3 class="text-lg font-black text-white mb-3 uppercase tracking-tighter">Instant Alerts</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Never miss a winning pick. Receive instant notifications the moment our experts lock in a selection.</p>
                 </div>
             </div>
         </div>
 
         <!-- FAQ Section -->
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h2>
-            <div class="space-y-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">How do I pay?</h3>
-                    <p class="text-gray-600">We accept multiple payment methods including:</p>
-                    <ul class="list-disc list-inside text-gray-600 mt-2 space-y-1">
-                        <li><strong>Flutterwave:</strong> Cards, bank transfers, and mobile money</li>
-                        <li><strong>PayPal:</strong> PayPal account payments</li>
-                        <li><strong>Skrill:</strong> Digital wallet payments</li>
-                        <li><strong>Cryptocurrency:</strong> Bitcoin (BTC), Tether (USDT), Ethereum (ETH), Binance Coin (BNB), and TRON (TRX)</li>
-                    </ul>
+        <div class="max-w-4xl mx-auto" data-aos="fade-up">
+            <h2 class="text-3xl font-black text-white text-center mb-12 uppercase tracking-widest">Payment & Support</h2>
+            <div class="space-y-4">
+                <div class="bg-slate-900/30 border border-white/5 rounded-2xl p-6 hover:bg-slate-900/50 transition-all">
+                    <h3 class="text-lg font-bold text-white mb-3 flex items-center">
+                        <i class="fas fa-wallet text-blue-500 mr-3 opacity-70"></i>
+                        Available Payment Methods
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                        <div class="text-xs font-bold text-slate-500 py-2 px-3 bg-white/5 rounded-lg border border-white/5 text-center">Flutterwave</div>
+                        <div class="text-xs font-bold text-slate-500 py-2 px-3 bg-white/5 rounded-lg border border-white/5 text-center">PayPal</div>
+                        <div class="text-xs font-bold text-slate-500 py-2 px-3 bg-white/5 rounded-lg border border-white/5 text-center">Skrill</div>
+                        <div class="text-xs font-bold text-slate-500 py-2 px-3 bg-white/5 rounded-lg border border-white/5 text-center">Crypto</div>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Can I cancel my subscription?</h3>
-                    <p class="text-gray-600">Yes, you can cancel your subscription at any time. However, refunds are not available for the current billing period.</p>
+                
+                <div class="bg-slate-900/30 border border-white/5 rounded-2xl p-6 hover:bg-slate-900/50 transition-all">
+                    <h3 class="text-lg font-bold text-white mb-3 flex items-center">
+                        <i class="fas fa-shield-alt text-green-500 mr-3 opacity-70"></i>
+                        Refund Policy
+                    </h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        We offer a 7-day money-back guarantee for all new institutional and individual subscribers. If you're not satisfied, our support team is available 24/7 to assist.
+                    </p>
                 </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">What if I'm not satisfied?</h3>
-                    <p class="text-gray-600">We offer a 7-day money-back guarantee for all new subscribers. Contact our support team for assistance.</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Do you offer refunds?</h3>
-                    <p class="text-gray-600">Refunds are available within 7 days of subscription for new users. Contact support for more information.</p>
+
+                <div class="bg-slate-900/30 border border-white/5 rounded-2xl p-6 hover:bg-slate-900/50 transition-all">
+                    <h3 class="text-lg font-bold text-white mb-3 flex items-center">
+                        <i class="fas fa-undo text-red-500 mr-3 opacity-70"></i>
+                        Subscription Cancellation
+                    </h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        You can cancel your subscription at any time within your dashboard settings. You will continue to have access until the end of your current billing cycle.
+                    </p>
                 </div>
             </div>
         </div>
@@ -227,10 +272,8 @@ function updatePricingForCountry(country) {
     
     // Show loading state
     const pricingCards = document.querySelectorAll('[id^="plan-"]');
-    console.log('Found pricing cards:', pricingCards.length);
     pricingCards.forEach(card => {
-        card.style.opacity = '0.6';
-        card.style.pointerEvents = 'none';
+        card.classList.add('opacity-40', 'pointer-events-none');
     });
 
     // Update current country display
@@ -238,61 +281,42 @@ function updatePricingForCountry(country) {
 
     // Fetch new pricing
     fetch(`/pricing/country?country=${country}`)
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Pricing data received:', data);
             if (data.status === 'success') {
-                // Update pricing for each plan
                 Object.keys(data.pricing).forEach(planKey => {
                     const plan = data.pricing[planKey];
-                    console.log(`Updating plan ${planKey}:`, plan);
                     
                     // Update currency
                     const currencyElement = document.querySelector(`.currency-${planKey}`);
                     if (currencyElement) {
                         currencyElement.textContent = plan.currency;
-                        console.log(`Updated currency for ${planKey}: ${plan.currency}`);
-                    } else {
-                        console.warn(`Currency element not found for plan: ${planKey}`);
                     }
                     
                     // Update amount
                     const amountElement = document.querySelector(`.amount-${planKey}`);
                     if (amountElement) {
                         amountElement.textContent = plan.price.toLocaleString();
-                        console.log(`Updated amount for ${planKey}: ${plan.price.toLocaleString()}`);
-                    } else {
-                        console.warn(`Amount element not found for plan: ${planKey}`);
                     }
                     
-                    // Update the link with new amount and currency
+                    // Update the link
                     const link = document.querySelector(`.link-${planKey}`);
                     if (link) {
                         const url = new URL(link.href);
                         url.searchParams.set('amount', plan.price);
                         url.searchParams.set('currency', plan.currency);
                         link.href = url.toString();
-                        console.log(`Updated link for ${planKey}: ${link.href}`);
-                    } else {
-                        console.warn(`Link not found for plan: ${planKey}`);
                     }
                 });
-            } else {
-                console.error('Pricing update failed:', data);
             }
         })
         .catch(error => {
             console.error('Error updating pricing:', error);
-            alert('Error updating pricing. Please try again.');
         })
         .finally(() => {
             // Remove loading state
             pricingCards.forEach(card => {
-                card.style.opacity = '1';
-                card.style.pointerEvents = 'auto';
+                card.classList.remove('opacity-40', 'pointer-events-none');
             });
         });
 }

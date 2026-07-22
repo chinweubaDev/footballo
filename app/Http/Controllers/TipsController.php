@@ -23,7 +23,7 @@ class TipsController extends Controller
         // Fetch VIP fixtures from database
         $tips = Fixture::vip()
             ->with('predictions')
-            ->where('match_date', '>=', now()->subHours(2)) // Show current/future matches
+            ->whereDate('match_date', today())
             ->orderBy('match_date', 'asc')
             ->paginate(10);
 
@@ -45,7 +45,7 @@ class TipsController extends Controller
         // Fetch VVIP fixtures from database
         $tips = Fixture::vvip()
             ->with('predictions')
-            ->where('match_date', '>=', now()->subHours(2))
+            ->whereDate('match_date', today())
             ->orderBy('match_date', 'asc')
             ->paginate(10);
 

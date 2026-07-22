@@ -25,10 +25,11 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table-admin">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Match</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">League</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -39,26 +40,31 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($fixtures as $fixture)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Match">
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ $fixture->home_team }} vs {{ $fixture->away_team }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Score">
+                                <div class="text-sm font-semibold text-gray-900">
+                                    {{ $fixture->home_goals ?? '--' }} - {{ $fixture->away_goals ?? '--' }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="League">
                                 <div class="text-sm text-gray-900">{{ $fixture->league_name }}</div>
                                 <div class="text-sm text-gray-500">{{ $fixture->league_country }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-label="Date">
                                 {{ $fixture->match_date->format('M d, Y H:i') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $fixture->status === 'finished' ? 'bg-green-100 text-green-800' : 
                                        ($fixture->status === 'live' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
                                     {{ ucfirst($fixture->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Flags">
                                 <div class="flex space-x-1">
                                     @if($fixture->today_tip)
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -77,7 +83,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" data-label="Actions">
                                 <div class="flex space-x-2">
                                     <button onclick="editFixture({{ $fixture->id }})" class="text-blue-600 hover:text-blue-900">
                                         <i class="fas fa-edit"></i>
@@ -312,6 +318,76 @@
                                 <textarea name="maxodds_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Enter maxodds tip content..."></textarea>
                             </div>
                         </div>
+
+                        <!-- Over 1.5 -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" name="over15" id="over15" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                <label for="over15" class="ml-2 block text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-plus-circle text-green-600 mr-1"></i>Over 1.5
+                                </label>
+                            </div>
+                            <div class="ml-6">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Over 1.5 Tip Content</label>
+                                <textarea name="over15_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter Over 1.5 tip content..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Over 2.5 -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" name="over25" id="over25" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                <label for="over25" class="ml-2 block text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-plus-circle text-green-600 mr-1"></i>Over 2.5
+                                </label>
+                            </div>
+                            <div class="ml-6">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Over 2.5 Tip Content</label>
+                                <textarea name="over25_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter Over 2.5 tip content..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Double Chance -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" name="double_chance" id="double_chance" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                <label for="double_chance" class="ml-2 block text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-clone text-green-600 mr-1"></i>Double Chance
+                                </label>
+                            </div>
+                            <div class="ml-6">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Double Chance Tip Content</label>
+                                <textarea name="double_chance_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter Double Chance tip content..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- BTS -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" name="bts" id="bts" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                <label for="bts" class="ml-2 block text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-exchange-alt text-green-600 mr-1"></i>BTS
+                                </label>
+                            </div>
+                            <div class="ml-6">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">BTS Tip Content</label>
+                                <textarea name="bts_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter BTS tip content..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Draw -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center mb-3">
+                                <input type="checkbox" name="draw" id="draw" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                <label for="draw" class="ml-2 block text-sm font-semibold text-gray-900">
+                                    <i class="fas fa-handshake text-green-600 mr-1"></i>Draw
+                                </label>
+                            </div>
+                            <div class="ml-6">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Draw Tip Content</label>
+                                <textarea name="draw_tip_content" rows="2" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm" placeholder="Enter Draw tip content..."></textarea>
+                            </div>
+                        </div>
                         
                         <!-- Premium Checkbox -->
                         <div class="flex items-center">
@@ -322,27 +398,7 @@
                     
                     <!-- VIP/VVIP Tips Section -->
                     <div class="border-t border-gray-200 pt-6 mb-6">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">VIP/VVIP Tips</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tip Type</label>
-                                <select name="tip_type" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
-                                    <option value="">Select Tip Type</option>
-                                    <option value="vip">VIP Tip</option>
-                                    <option value="vvip">VVIP Tip</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tip Title</label>
-                                <input type="text" name="tip_title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="e.g., High Confidence Home Win">
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tip Content</label>
-                            <textarea name="tip_content" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm" placeholder="Enter detailed tip analysis..."></textarea>
-                        </div>
+                     
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
@@ -356,10 +412,7 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center mt-4">
-                            <input type="checkbox" name="is_featured_tip" id="is_featured_tip" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                            <label for="is_featured_tip" class="ml-2 block text-sm text-gray-900">Featured Tip</label>
-                        </div>
+
                     </div>
                     
                     <div class="flex justify-end space-x-3">
@@ -410,6 +463,16 @@
                         <label class="block text-sm font-medium text-gray-700">Match Date</label>
                         <input type="datetime-local" id="editMatchDate" name="match_date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Home Goals</label>
+                        <input type="number" id="editHomeGoals" name="home_goals" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Away Goals</label>
+                        <input type="number" id="editAwayGoals" name="away_goals" min="0" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -441,6 +504,59 @@
                     <div class="flex items-center">
                         <input type="checkbox" name="edit_is_surepick" id="edit_is_surepick" class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded">
                         <label for="edit_is_surepick" class="ml-2 block text-sm text-gray-900">Sure Pick</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="edit_over15" id="edit_over15" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="edit_over15" class="ml-2 block text-sm text-gray-900">Over 1.5</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="edit_over25" id="edit_over25" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="edit_over25" class="ml-2 block text-sm text-gray-900">Over 2.5</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="edit_double_chance" id="edit_double_chance" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="edit_double_chance" class="ml-2 block text-sm text-gray-900">Double Chance</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="edit_bts" id="edit_bts" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="edit_bts" class="ml-2 block text-sm text-gray-900">BTS</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="edit_draw" id="edit_draw" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="edit_draw" class="ml-2 block text-sm text-gray-900">Draw</label>
+                    </div>
+                </div>
+
+                <!-- Tip Content for new types -->
+                <div class="border-t border-gray-200 pt-6 mb-6">
+                    <h4 class="text-md font-semibold text-gray-700 mb-4">Tip Content Updates</h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Over 1.5 Tip Content</label>
+                            <textarea id="editOver15Content" name="over15_tip_content" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Over 2.5 Tip Content</label>
+                            <textarea id="editOver25Content" name="over25_tip_content" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Double Chance Tip Content</label>
+                            <textarea id="editDoubleChanceContent" name="double_chance_tip_content" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">BTS Tip Content</label>
+                            <textarea id="editBtsContent" name="bts_tip_content" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Draw Tip Content</label>
+                            <textarea id="editDrawContent" name="draw_tip_content" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                        </div>
                     </div>
                 </div>
                 
@@ -761,12 +877,22 @@ document.getElementById('addPredictionForm').addEventListener('submit', async fu
         is_vip: formData.get('is_vip') === 'on',
         is_vvip: formData.get('is_vvip') === 'on',
         is_surepick: formData.get('is_surepick') === 'on',
+        over15: formData.get('over15') === 'on',
+        over25: formData.get('over25') === 'on',
+        double_chance: formData.get('double_chance') === 'on',
+        bts: formData.get('bts') === 'on',
+        draw: formData.get('draw') === 'on',
         today_tip_content: formData.get('today_tip_content'),
         featured_tip_content: formData.get('featured_tip_content'),
         vip_tip_content: formData.get('vip_tip_content'),
         vvip_tip_content: formData.get('vvip_tip_content'),
         surepick_tip_content: formData.get('surepick_tip_content'),
-        maxodds_tip_content: formData.get('maxodds_tip_content')
+        maxodds_tip_content: formData.get('maxodds_tip_content'),
+        over15_tip_content: formData.get('over15_tip_content'),
+        over25_tip_content: formData.get('over25_tip_content'),
+        double_chance_tip_content: formData.get('double_chance_tip_content'),
+        bts_tip_content: formData.get('bts_tip_content'),
+        draw_tip_content: formData.get('draw_tip_content')
     };
     
     try {
@@ -807,12 +933,35 @@ async function editFixture(fixtureId) {
             document.getElementById('editAwayTeam').value = fixture.away_team;
             document.getElementById('editLeagueName').value = fixture.league_name;
             document.getElementById('editMatchDate').value = new Date(fixture.match_date).toISOString().slice(0, 16);
+            document.getElementById('editHomeGoals').value = fixture.home_goals !== null ? fixture.home_goals : '';
+            document.getElementById('editAwayGoals').value = fixture.away_goals !== null ? fixture.away_goals : '';
             document.getElementById('edit_today_tip').checked = fixture.today_tip;
             document.getElementById('edit_featured').checked = fixture.featured;
             document.getElementById('edit_maxodds_tip').checked = fixture.maxodds_tip;
             document.getElementById('edit_is_vip').checked = fixture.is_vip || false;
             document.getElementById('edit_is_vvip').checked = fixture.is_vvip || false;
             document.getElementById('edit_is_surepick').checked = fixture.is_surepick || false;
+            document.getElementById('edit_over15').checked = fixture.over15 || false;
+            document.getElementById('edit_over25').checked = fixture.over25 || false;
+            document.getElementById('edit_double_chance').checked = fixture.double_chance || false;
+            document.getElementById('edit_bts').checked = fixture.bts || false;
+            document.getElementById('edit_draw').checked = fixture.draw || false;
+            
+            // Populate tip contents from the first prediction
+            if (fixture.predictions && fixture.predictions.length > 0) {
+                const prediction = fixture.predictions[0];
+                document.getElementById('editOver15Content').value = prediction.over15_tip_content || '';
+                document.getElementById('editOver25Content').value = prediction.over25_tip_content || '';
+                document.getElementById('editDoubleChanceContent').value = prediction.double_chance_tip_content || '';
+                document.getElementById('editBtsContent').value = prediction.bts_tip_content || '';
+                document.getElementById('editDrawContent').value = prediction.draw_tip_content || '';
+            } else {
+                document.getElementById('editOver15Content').value = '';
+                document.getElementById('editOver25Content').value = '';
+                document.getElementById('editDoubleChanceContent').value = '';
+                document.getElementById('editBtsContent').value = '';
+                document.getElementById('editDrawContent').value = '';
+            }
             
             document.getElementById('editFixtureModal').classList.remove('hidden');
         }
@@ -842,7 +991,19 @@ document.getElementById('editFixtureForm').addEventListener('submit', async func
         maxodds_tip: formData.get('edit_maxodds_tip') === 'on',
         is_vip: formData.get('edit_is_vip') === 'on',
         is_vvip: formData.get('edit_is_vvip') === 'on',
-        is_surepick: formData.get('edit_is_surepick') === 'on'
+        is_surepick: formData.get('edit_is_surepick') === 'on',
+        over15: formData.get('edit_over15') === 'on',
+        over25: formData.get('edit_over25') === 'on',
+        double_chance: formData.get('edit_double_chance') === 'on',
+        bts: formData.get('edit_bts') === 'on',
+        draw: formData.get('edit_draw') === 'on',
+        home_goals: formData.get('home_goals'),
+        away_goals: formData.get('away_goals'),
+        over15_tip_content: formData.get('over15_tip_content'),
+        over25_tip_content: formData.get('over25_tip_content'),
+        double_chance_tip_content: formData.get('double_chance_tip_content'),
+        bts_tip_content: formData.get('bts_tip_content'),
+        draw_tip_content: formData.get('draw_tip_content')
     };
     
     try {

@@ -25,6 +25,11 @@ class Prediction extends Model
         'vvip_tip_content',
         'surepick_tip_content',
         'maxodds_tip_content',
+        'over15_tip_content',
+        'over25_tip_content',
+        'double_chance_tip_content',
+        'bts_tip_content',
+        'draw_tip_content',
     ];
 
     protected function casts(): array

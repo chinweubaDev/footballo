@@ -13,6 +13,8 @@ class PaymentMethodSeeder extends Seeder
      */
     public function run(): void
     {
+        PaymentMethod::truncate();
+
         $methods = [
             [
                 'name' => 'Flutterwave',
@@ -124,11 +126,29 @@ class PaymentMethodSeeder extends Seeder
                     'network' => 'tron'
                 ],
                 'sort_order' => 8
+            ],
+            [
+                'name' => 'Bank Transfer',
+                'type' => 'bank_transfer',
+                'display_name' => 'Local Bank Transfer',
+                'description' => 'Nigerian Bank Accounts',
+                'icon' => 'fas fa-university',
+                'color' => 'emerald',
+                'config' => [
+                    'bank_name' => 'GTBank / Access Bank',
+                    'account_number' => '0123456789',
+                    'account_name' => 'FOOTBALL APP ENT.',
+                    'instructions' => 'Transfer exact amount and upload proof'
+                ],
+                'sort_order' => 9
             ]
         ];
 
         foreach ($methods as $method) {
-            PaymentMethod::create($method);
+            PaymentMethod::updateOrCreate(
+                ['name' => $method['name'], 'crypto_type' => $method['crypto_type'] ?? null],
+                $method
+            );
         }
     }
 }

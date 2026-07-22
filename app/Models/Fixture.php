@@ -38,6 +38,17 @@ class Fixture extends Model
         'is_vip',
         'is_vvip',
         'is_surepick',
+        'over15',
+        'over25',
+        'double_chance',
+        'bts',
+        'draw',
+        'elapsed',
+        'sport_type',
+        'confidence_score',
+        'expected_home_goals',
+        'expected_away_goals',
+        'prediction_json',
     ];
 
     protected function casts(): array
@@ -50,23 +61,24 @@ class Fixture extends Model
             'is_vip' => 'boolean',
             'is_vvip' => 'boolean',
             'is_surepick' => 'boolean',
+            'over15' => 'boolean',
+            'over25' => 'boolean',
+            'double_chance' => 'boolean',
+            'bts' => 'boolean',
+            'draw' => 'boolean',
         ];
     }
 // App\Models\Fixture.php
 
-public function scopeTodayTips($query)
-{
-    return $query->whereHas('predictions', function ($q) {
-        $q->where('today_tip', true);
-    });
-}
+    public function scopeTodayTips($query)
+    {
+        return $query->where('today_tip', true);
+    }
 
-public function scopeFeatured($query)
-{
-    return $query->whereHas('predictions', function ($q) {
-        $q->where('featured', true);
-    });
-}
+    public function scopeFeatured($query)
+    {
+        return $query->where('featured', true);
+    }
 
     /**
      * Get the predictions for this fixture.
@@ -76,21 +88,6 @@ public function scopeFeatured($query)
         return $this->hasMany(Prediction::class);
     }
 
-    /**
-     * Scope for today's tips.
-     */
-    public function scopeTodayTipds($query)
-    {
-        return $query->where('today_tip', true);
-    }
-
-    /**
-     * Scope for featured predictions.
-     */
-    public function scopeFeaturded($query)
-    {
-        return $query->where('featured', true);
-    }
 
     /**
      * Scope for maxodds tips.

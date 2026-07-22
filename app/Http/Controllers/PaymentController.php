@@ -37,6 +37,11 @@ class PaymentController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        // Filter bank transfer for non-Nigerians
+        // $paymentMethods = $paymentMethods->reject(function ($method) {
+        //     return $method->type === 'bank_transfer' && (Auth::user()->country ?? '') !== 'Nigeriaa';
+        // });
+
         return view('payment.methods', [
             'plan' => $request->plan,
             'amount' => $request->amount,
@@ -147,7 +152,7 @@ class PaymentController extends Controller
             'plan_type' => 'required|string',
             'amount' => 'required|numeric|min:0',
             'currency' => 'required|string|size:3',
-            'payment_method' => 'required|in:flutterwave,paypal,skrill,crypto',
+            'payment_method' => 'required|in:flutterwave,paypal,skrill,crypto,bank_transfer',
             'crypto_type' => 'nullable|in:BTC,USDT,ETH,BNB,TRX',
         ]);
 
@@ -423,6 +428,9 @@ class PaymentController extends Controller
                 return $this->initializeSkrillPayment($payment);
             case 'crypto':
                 return $this->initializeCryptoPayment($payment, $cryptoType);
+            case 'bank_transfer':
+                session()->flash('success', 'Transmission notice received! Your premium access will be activated upon verification of the transfer.');
+                return route('dashboard');
             default:
                 throw new \Exception('Unsupported payment method');
         }

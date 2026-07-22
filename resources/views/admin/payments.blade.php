@@ -92,7 +92,7 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table-admin">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
@@ -107,7 +107,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($payments as $payment)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="User">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
                                         <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
@@ -120,14 +120,14 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Plan">
                                 <div class="text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $payment->plan_type)) }}</div>
                                 <div class="text-sm text-gray-500">{{ $payment->plan_duration_days }} days</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Amount">
                                 <div class="text-sm font-medium text-gray-900">{{ $payment->currency }} {{ number_format($payment->amount) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $payment->status === 'completed' ? 'bg-green-100 text-green-800' : 
                                        ($payment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
@@ -135,13 +135,13 @@
                                     {{ ucfirst($payment->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-label="Date">
                                 {{ $payment->created_at->format('M d, Y H:i') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-label="Txn ID">
                                 {{ $payment->transaction_id }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-label="Actions">
                                 @if(in_array($payment->status, ['pending', 'failed']))
                                 <form action="{{ route('admin.payments.requery', $payment) }}" method="POST" class="inline-block">
                                     @csrf

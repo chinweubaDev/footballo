@@ -222,8 +222,7 @@ class AdminController extends Controller
                 'api_fixture_id' => 'required|integer|unique:fixtures',
                 'league_name' => 'required|string',
                 'league_country' => 'required|string',
-                'league_logo' => 'required|string',
-                'league_flag' => 'required|string',
+                'league_logo' => 'string',
                 'league_id' => 'required|integer',
                 'season' => 'required|integer',
                 'home_team' => 'required|string',
@@ -245,6 +244,11 @@ class AdminController extends Controller
                 'is_vip' => 'boolean',
                 'is_vvip' => 'boolean',
                 'is_surepick' => 'boolean',
+                'over15' => 'boolean',
+                'over25' => 'boolean',
+                'double_chance' => 'boolean',
+                'bts' => 'boolean',
+                'draw' => 'boolean',
                 // Individual tip content fields
                 'today_tip_content' => 'nullable|string',
                 'featured_tip_content' => 'nullable|string',
@@ -252,6 +256,11 @@ class AdminController extends Controller
                 'vvip_tip_content' => 'nullable|string',
                 'surepick_tip_content' => 'nullable|string',
                 'maxodds_tip_content' => 'nullable|string',
+                'over15_tip_content' => 'nullable|string',
+                'over25_tip_content' => 'nullable|string',
+                'double_chance_tip_content' => 'nullable|string',
+                'bts_tip_content' => 'nullable|string',
+                'draw_tip_content' => 'nullable|string',
                 // VIP/VVIP Tips validation
                 'tip_type' => 'nullable|in:vip,vvip',
                 'tip_title' => 'nullable|string|max:255',
@@ -269,7 +278,7 @@ class AdminController extends Controller
                 'league_country' => $request->league_country,
                 'league_id' => $request->league_id,
                 'league_logo'  => $request->league_logo,
-                'league_flag'  => $request->league_flag,
+                'league_flag'  => $request->league_flag ,
                 'season' => $request->season,
                 'home_team' => $request->home_team,
                 'away_team' => $request->away_team,
@@ -284,6 +293,11 @@ class AdminController extends Controller
                 'is_vip' => $request->boolean('is_vip'),
                 'is_vvip' => $request->boolean('is_vvip'),
                 'is_surepick' => $request->boolean('is_surepick'),
+                'over15' => $request->boolean('over15'),
+                'over25' => $request->boolean('over25'),
+                'double_chance' => $request->boolean('double_chance'),
+                'bts' => $request->boolean('bts'),
+                'draw' => $request->boolean('draw'),
             ]);
 
             Log::info('Fixture created successfully', ['fixture_id' => $fixture->id]);
@@ -304,6 +318,11 @@ class AdminController extends Controller
                 'vvip_tip_content' => $request->vvip_tip_content,
                 'surepick_tip_content' => $request->surepick_tip_content,
                 'maxodds_tip_content' => $request->maxodds_tip_content,
+                'over15_tip_content' => $request->over15_tip_content,
+                'over25_tip_content' => $request->over25_tip_content,
+                'double_chance_tip_content' => $request->double_chance_tip_content,
+                'bts_tip_content' => $request->bts_tip_content,
+                'draw_tip_content' => $request->draw_tip_content,
             ]);
 
             Log::info('Prediction created successfully');
@@ -350,6 +369,41 @@ class AdminController extends Controller
                 $categories[] = [
                     'key' => 'maxodds',
                     'content' => $request->maxodds_tip_content
+                ];
+            }
+
+            if ($request->boolean('over15')) {
+                $categories[] = [
+                    'key' => 'over15',
+                    'content' => $request->over15_tip_content
+                ];
+            }
+
+            if ($request->boolean('over25')) {
+                $categories[] = [
+                    'key' => 'over25',
+                    'content' => $request->over25_tip_content
+                ];
+            }
+
+            if ($request->boolean('double_chance')) {
+                $categories[] = [
+                    'key' => 'double_chance',
+                    'content' => $request->double_chance_tip_content
+                ];
+            }
+
+            if ($request->boolean('bts')) {
+                $categories[] = [
+                    'key' => 'bts',
+                    'content' => $request->bts_tip_content
+                ];
+            }
+
+            if ($request->boolean('draw')) {
+                $categories[] = [
+                    'key' => 'draw',
+                    'content' => $request->draw_tip_content
                 ];
             }
 
@@ -452,6 +506,11 @@ class AdminController extends Controller
             'vvip' => 'VVIP Exclusive',
             'surepick' => 'Sure Pick',
             'maxodds' => 'MaxOdds Tip',
+            'over15' => 'Over 1.5 Tip',
+            'over25' => 'Over 2.5 Tip',
+            'double_chance' => 'Double Chance Tip',
+            'bts' => 'BTS Tip',
+            'draw' => 'Draw Tip',
         ];
 
         $label = $categoryLabels[$category] ?? 'Tip';
@@ -484,7 +543,7 @@ class AdminController extends Controller
     {
         return response()->json([
             'status' => 'success',
-            'fixture' => $fixture
+            'fixture' => $fixture->load('predictions')
         ]);
     }
 
@@ -501,6 +560,14 @@ class AdminController extends Controller
             'is_vip' => 'boolean',
             'is_vvip' => 'boolean',
             'is_surepick' => 'boolean',
+            'draw' => 'boolean',
+            'home_goals' => 'nullable|integer|min:0',
+            'away_goals' => 'nullable|integer|min:0',
+            'over15_tip_content' => 'nullable|string',
+            'over25_tip_content' => 'nullable|string',
+            'double_chance_tip_content' => 'nullable|string',
+            'bts_tip_content' => 'nullable|string',
+            'draw_tip_content' => 'nullable|string',
         ]);
 
         $fixture->update([
@@ -514,7 +581,26 @@ class AdminController extends Controller
             'is_vip' => $request->boolean('is_vip'),
             'is_vvip' => $request->boolean('is_vvip'),
             'is_surepick' => $request->boolean('is_surepick'),
+            'over15' => $request->boolean('over15'),
+            'over25' => $request->boolean('over25'),
+            'double_chance' => $request->boolean('double_chance'),
+            'bts' => $request->boolean('bts'),
+            'draw' => $request->boolean('draw'),
+            'home_goals' => $request->home_goals,
+            'away_goals' => $request->away_goals,
         ]);
+
+        // Update prediction content if it exists
+        $prediction = $fixture->predictions()->first();
+        if ($prediction) {
+            $prediction->update([
+                'over15_tip_content' => $request->over15_tip_content,
+                'over25_tip_content' => $request->over25_tip_content,
+                'double_chance_tip_content' => $request->double_chance_tip_content,
+                'bts_tip_content' => $request->bts_tip_content,
+                'draw_tip_content' => $request->draw_tip_content,
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',

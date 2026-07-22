@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', $category . ' Predictions')
+@section('title', 'Sure Tips Prediction - ' . $category . ' Winning Tips for Today')
+@section('meta_description', 'Get the best ' . $category . ' sure tips prediction and winning tips for today. Our accurate football prediction models cover all major leagues.')
+@section('meta_keywords', $category . ' predictions, winning tips for today, sure tips prediction, best betting tip')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen pb-20">
@@ -25,7 +27,7 @@
                 @endphp
                 <i class="fas {{ $icon }} text-3xl"></i>
             </div>
-            <h1 class="text-4xl lg:text-6xl font-black text-white mb-6">{{ $category }} Predictions</h1>
+            <h1 class="text-4xl lg:text-6xl font-black text-white mb-6">{{ $category }} Sure Tips Prediction</h1>
             <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
                 Expert insights and mathematical models tailored specifically for the {{ $category }} betting market.
             </p>
@@ -73,66 +75,58 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left responsive-table">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100">
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Time</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Match</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Score</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tip</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conf</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right pr-6">Odds</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
                     @foreach($fixtures as $fixture)
                         @foreach($fixture->predictions as $prediction)
-                        <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group ring-1 ring-slate-100 flex flex-col h-full">
-                            <!-- Match Time/Meta -->
-                            <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-50">
-                                <span class="bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg">
-                                    {{ $prediction->category }}
-                                </span>
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                                    <i class="far fa-clock mr-1.5 text-blue-500"></i>
-                                    {{ $fixture->match_date->format('H:i') }}
-                                </span>
-                            </div>
-
-                            <!-- Match Content -->
-                            <div class="flex items-center justify-between space-x-4 mb-8">
-                                <div class="flex-1 text-center">
-                                    <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center p-2 mb-3 mx-auto border border-slate-100 group-hover:bg-white transition-colors shadow-inner">
-                                        <img src="{{ $fixture->home_team_logo }}" class="w-full h-full object-contain">
-                                    </div>
-                                    <span class="text-xs font-extrabold text-slate-800 line-clamp-1">{{ $fixture->home_team }}</span>
+                        @php
+                            $tipField = match($category) {
+                                'Over 1.5' => 'over15_tip_content',
+                                'Over 2.5' => 'over25_tip_content',
+                                'Double Chance' => 'double_chance_tip_content',
+                                'Both Teams to Score' => 'bts_tip_content',
+                                'Draw' => 'draw_tip_content',
+                                default => 'tip'
+                            };
+                            $tip = $prediction->{$tipField} ?? $prediction->tip;
+                        @endphp
+                        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location='{{ route('match.detail', $fixture->id) }}'">
+                            <td class="px-6 py-4" data-label="Time"><span class="font-bold text-slate-900">{{ $fixture->match_date->format('H:i') }}</span></td>
+                            <td class="px-6 py-4" data-label="Match">
+                                <div class="flex items-center gap-2">
+                                    <img src="{{ $fixture->home_team_logo }}" class="w-5 h-5 object-contain">
+                                    <span class="text-sm font-bold text-slate-800">{{ $fixture->home_team }}</span>
+                                    <span class="text-[10px] text-slate-300">vs</span>
+                                    <span class="text-sm font-bold text-slate-800">{{ $fixture->away_team }}</span>
+                                    <img src="{{ $fixture->away_team_logo }}" class="w-5 h-5 object-contain">
                                 </div>
-                                <div class="px-2 text-[10px] font-black text-slate-200">VS</div>
-                                <div class="flex-1 text-center">
-                                    <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center p-2 mb-3 mx-auto border border-slate-100 group-hover:bg-white transition-colors shadow-inner">
-                                        <img src="{{ $fixture->away_team_logo }}" class="w-full h-full object-contain">
-                                    </div>
-                                    <span class="text-xs font-extrabold text-slate-800 line-clamp-1">{{ $fixture->away_team }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Prediction Footer -->
-                            <div class="mt-auto">
-                                <div class="bg-slate-900 rounded-3xl p-5 mb-6 text-center transform transition-all group-hover:scale-105 duration-300 shadow-xl shadow-slate-900/10">
-                                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-2">Expert Tip</span>
-                                    <span class="text-2xl font-black text-white italic">"{{ $prediction->tip }}"</span>
-                                </div>
-
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence Level</span>
-                                    <span class="text-xs font-black text-blue-600">{{ $prediction->confidence }}%</span>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-1.5 p-0.5 overflow-hidden">
-                                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-0.5 rounded-full transition-all duration-700 shadow-sm" style="width: {{ $prediction->confidence }}%"></div>
-                                </div>
-                                
-                                <div class="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="text-lg font-black text-slate-900">{{ $prediction->odds ?? '1.85' }}</div>
-                                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Odds</div>
-                                    </div>
-                                    <button class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-                                        <i class="fas fa-plus text-xs"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            </td>
+                            <td class="px-6 py-4 text-center" data-label="Score">
+                                @if(in_array($fixture->status, ['FT','AET','PEN']))
+                                    <span class="font-black bg-slate-100 px-2 py-1 rounded-lg">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                @else
+                                    <span class="text-slate-300 font-bold">––</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4" data-label="Tip"><span class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold">{{ $tip }}</span></td>
+                            <td class="px-6 py-4" data-label="Conf"><span class="font-bold text-blue-600">{{ $prediction->confidence }}%</span></td>
+                            <td class="px-6 py-4 text-right pr-6" data-label="Odds"><span class="font-black text-slate-900">{{ $prediction->odds ?? '-' }}</span></td>
+                        </tr>
                         @endforeach
                     @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
             @endforeach
@@ -164,7 +158,7 @@
                 <h2 class="text-3xl lg:text-5xl font-black mb-6">Master the {{ $category }} Market</h2>
                 <p class="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">Unlock access to our high-margin algorithm that predicts {{ $category }} outcomes with up to 95% accuracy.</p>
                 <div class="flex flex-col sm:flex-row gap-6 justify-center">
-                    <a href="{{ route('premium.tips') }}" class="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-lg hover:shadow-xl hover:-translate-y-1 transition-all">
+                    <a href="{{ route('predictions.premium') }}" class="bg-white text-blue-600 px-10 py-5 rounded-2xl font-black text-lg hover:shadow-xl hover:-translate-y-1 transition-all">
                         <i class="fas fa-crown mr-3"></i> Get VIP Tips
                     </a>
                     <a href="{{ route('pricing') }}" class="bg-blue-500/50 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-500 transition-all">

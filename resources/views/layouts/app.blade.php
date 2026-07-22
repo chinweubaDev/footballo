@@ -4,97 +4,110 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="user-authenticated" content="{{ auth()->check() ? 'true' : 'false' }}">
+    <meta name="author" content="EsureBet">
+    <meta name="theme-color" content="#16a34a">
 
-    <title>@yield('title', 'Football Predictions') - {{ config('app.name', 'Laravel') }}</title>
-    <meta name="description" content="@yield('meta_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors with our accurate daily forecasts.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'football predictions, betting tips, soccer analysis, sports betting, daily tips, vip predictions')">
+    {{-- Primary SEO --}}
+    <title>@yield('title', 'EsureBet — Best Football Prediction Site | Sure Tips & Winning Predictions')</title>
+    <meta name="description" content="@yield('meta_description', 'EsureBet provides accurate football predictions, sure betting tips, over 1.5/2.5 goals, BTTS, double chance, and expert analysis. Win with 85%+ accuracy rate.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'football predictions, sure tips, betting tips, over 2.5 predictions, BTTS tips, double chance, soccer predictions, today football tips, accurate football prediction')">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <link rel="canonical" href="@yield('canonical', url()->current())">
+    <link rel="alternate" hreflang="en" href="@yield('canonical', url()->current())">
 
-    <!-- Open Graph / Facebook -->
+    {{-- Open Graph --}}
+    <meta property="og:site_name" content="EsureBet">
     <meta property="og:type" content="website">
     <meta property="og:url" content="@yield('og_url', url()->current())">
-    <meta property="og:title" content="@yield('og_title', config('app.name', 'Football Predictions'))">
-    <meta property="og:description" content="@yield('og_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+    <meta property="og:title" content="@yield('og_title', 'EsureBet — Accurate Football Predictions & Sure Betting Tips')">
+    <meta property="og:description" content="@yield('og_description', 'Expert football predictions with 85%+ accuracy. Daily tips, over 2.5 goals, BTTS, double chance, and VIP predictions.')">
+    <meta property="og:image" content="@yield('og_image', asset('logo.png'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="@yield('og_url', url()->current())">
-    <meta property="twitter:title" content="@yield('og_title', config('app.name', 'Football Predictions'))">
-    <meta property="twitter:description" content="@yield('og_description', 'Expert football predictions, betting tips, and analysis. Join thousands of successful bettors.')">
-    <meta property="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@esurebet">
+    <meta name="twitter:title" content="@yield('og_title', 'EsureBet — Accurate Football Predictions')">
+    <meta name="twitter:description" content="@yield('og_description', 'Expert football predictions with 85%+ accuracy.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('logo.png'))">
 
-    <!-- Fonts -->
+    {{-- Preconnect for speed --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://media.api-sports.io">
 
-    <!-- Tailwind CSS -->
+    {{-- Fonts --}}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    {{-- Tailwind CDN — synchronous for instant styles --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    },
+                    fontFamily: { 'sans': ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
-                        primary: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            200: '#bbf7d0',
-                            300: '#86efac',
-                            400: '#4ade80',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
-                        },
-                        secondary: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                        }
+                        primary: {50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d'},
+                        secondary: {50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a'}
                     }
                 }
             }
         }
     </script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    
-    <!-- Font Awesome -->
+
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ md5_file(public_path('css/app.css')) }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    {{-- Schema.org Structured Data --}}
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "EsureBet",
+        "url": "{{ url('/') }}",
+        "logo": "{{ asset('logo.png') }}",
+        "description": "Professional football prediction website providing accurate betting tips, match analysis, and sure predictions.",
+        "sameAs": [],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "support@esurebet.com",
+            "contactType": "customer support"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "EsureBet",
+        "url": "{{ url('/') }}",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ url('/predictions') }}?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+    @stack('schema')
 </head>
 <body class="font-sans antialiased bg-gradient-to-br from-slate-50 via-white to-slate-100 min-h-screen">
+    {{-- Skip to content for accessibility --}}
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-xl">Skip to content</a>
+
     <div class="min-h-screen">
-        <!-- Navigation -->
-        <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <header>
+        <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50" aria-label="Main navigation">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-20">
                     <div class="flex items-center">
-                        <!-- Logo -->
                         <div class="flex-shrink-0 flex items-center">
-                            <a href="{{ route('home') }}" class="flex items-center space-x-3">
-                                <div class="">
-                                   
-<img src="{{ asset('logo.png') }}" alt="Logo" class="" width="200">
-                                
-                                </div>
-                              
+                            <a href="{{ route('home') }}" class="flex items-center space-x-3" aria-label="EsureBet Home">
+                                <img src="{{ asset('logo.png') }}" alt="EsureBet Logo" class="w-40 md:w-52 h-auto" width="208" height="40">
                             </a>
                         </div>
 
@@ -132,11 +145,14 @@
                                 </div>
                             </div>
                           
-                            <a href="{{ route('tips.vip') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
+                            <a href="/predictions/premium" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
                                 <i class="fas fa-crown mr-2 text-blue-500"></i>Premium Tips
                             </a>
-                            <a href="{{ route('tips.vvip') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
+                            <!-- <a href="{{ route('tips.vvip') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
                                 <i class="fas fa-gem mr-2 text-purple-500"></i>VVIP Tips
+                            </a> -->
+                            <a href="{{ route('basketball') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
+                                <i class="fas fa-basketball-ball mr-2 text-orange-500"></i>Basketball
                             </a>
                         </div>
                     </div>
@@ -197,34 +213,71 @@
                                 <i class="fas fa-tags mr-2"></i>Pricing
                             </a>
                            
-                            <a href="{{ route('register') }}" class="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl">
-                                <i class="fas fa-user-plus mr-2"></i>Login/Register
+                            <a href="{{ route('register') }}" class="inline-flex items-center px-4 md:px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                <i class="fas fa-user-plus md:mr-2"></i>
+                                <span class="hidden md:inline">Login/Register</span>
+                                <span class="md:hidden ml-2">Login</span>
                             </a>
                         @endauth
                     </div>
 
-                    <!-- Mobile menu button -->
-                    <div class="lg:hidden">
-                        <button type="button" class="inline-flex items-center justify-center p-2 rounded-xl text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" aria-controls="mobile-menu" aria-expanded="false">
+                    <div class="lg:hidden flex items-center space-x-2">
+                        @auth
+                            <div class="md:hidden w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-xs"></i>
+                            </div>
+                        @endauth
+                        <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-xl text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" aria-controls="mobile-menu" aria-expanded="false">
                             <span class="sr-only">Open main menu</span>
-                            <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
+                            <i class="fas fa-bars h-6 w-6 flex items-center justify-center text-xl"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Mobile menu -->
-            <div class="lg:hidden hidden" id="mobile-menu">
-                <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-slate-200">
-                    <a href="{{ route('home') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">Home</a>
-                    <a href="{{ route('predictions') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">All Predictions</a>
-                    <a href="{{ route('match.standings') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">Standings</a>
-                    <a href="{{ route('match.upcoming') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">Upcoming</a>
-                    <a href="{{ route('tips.vip') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">VIP Tips</a>
-                    <a href="{{ route('tips.vvip') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">VVIP Tips</a>
-                    <a href="{{ route('pricing') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:text-primary-600 hover:bg-slate-50">Pricing</a>
+            <div class="lg:hidden hidden animate-fade-in-down" id="mobile-menu">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-slate-100 shadow-xl">
+                    <a href="{{ route('home') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-home mr-3 text-slate-400"></i>Home
+                    </a>
+                       <div class="relative group">
+                                <button class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
+                                    <i class="fas fa-chart-line mr-2"></i>Free Predictions
+                                    <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                    <div class="py-2">
+                                        <a href="{{ route('predictions') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-list mr-3 text-primary-500"></i>All Predictions
+                                        </a>
+                                        <a href="{{ route('predictions.over15') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-arrow-up mr-3 text-green-500"></i>Over 1.5 Goals
+                                        </a>
+                                        <a href="{{ route('predictions.over25') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-arrow-up mr-3 text-green-500"></i>Over 2.5 Goals
+                                        </a>
+                                        <a href="{{ route('predictions.double-chance') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-exchange-alt mr-3 text-blue-500"></i>Double Chance
+                                        </a>
+                                        <a href="{{ route('predictions.bts') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-futbol mr-3 text-orange-500"></i>Both Teams to Score
+                                        </a>
+                                        <a href="{{ route('predictions.draw') }}" class="flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                            <i class="fas fa-equals mr-3 text-gray-500"></i>Draw
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                    <a href="/predictions/premium" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-crown mr-3 text-blue-500"></i>Premium Tips
+                    </a>
+                    <!-- <a href="{{ route('tips.vvip') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-gem mr-3 text-purple-500"></i>VVIP Tips
+                    </a> -->
+                    <a href="{{ route('pricing') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-tags mr-3 text-slate-400"></i>Pricing
+                    </a>
                 </div>
                 <div class="pt-4 pb-3 border-t border-slate-200 bg-slate-50">
                     @auth
@@ -323,6 +376,7 @@
                             <li><a href="{{ route('predictions') }}" class="text-slate-300 hover:text-white transition-colors duration-200">All Predictions</a></li>
                             <li><a href="{{ route('tips.vip') }}" class="text-slate-300 hover:text-white transition-colors duration-200">VIP Tips</a></li>
                             <li><a href="{{ route('tips.vvip') }}" class="text-slate-300 hover:text-white transition-colors duration-200">VVIP Tips</a></li>
+                            <li><a href="{{ route('predictions.tomorrow') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Today's Tips</a></li>
                             <li><a href="{{ route('pricing') }}" class="text-slate-300 hover:text-white transition-colors duration-200">Pricing</a></li>
                         </ul>
                     </div>
@@ -352,32 +406,25 @@
                     </div>
                 </div>
 
-                <!-- Bottom Bar -->
+                {{-- Breadcrumb Schema --}}
+                @stack('breadcrumb_schema')
+
                 <div class="border-t border-slate-700 mt-12 pt-8">
-                    <div class="flex flex-col md:flex-row justify-between items-center">
-                        <p class="text-slate-400 text-sm">&copy; {{ date('Y') }} Football Predictions. All rights reserved.</p>
-                        <div class="flex items-center space-x-6 mt-4 md:mt-0">
-                            <span class="text-slate-400 text-sm">Trusted by 10,000+ users</span>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-slate-400 text-sm">Live Support</span>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-slate-400 text-sm">&copy; {{ date('Y') }} EsureBet. All rights reserved. <span class="text-slate-500">|</span> <strong class="text-green-400">85%+ Accuracy</strong></p>
+                    <p class="text-slate-500 text-xs mt-2">Disclaimer: Betting involves risk. Please gamble responsibly. 18+ only. Predictions are for informational purposes.</p>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- JavaScript -->
-    <script src="{{ asset('js/app.js') }}"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+    <script src="{{ asset('js/app.js') }}?v={{ md5_file(public_path('js/app.js')) }}" defer></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 800, easing: 'ease-in-out', once: true });
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

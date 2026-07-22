@@ -3,49 +3,67 @@
 @section('title', 'Choose Payment Method - Football Predictions')
 
 @section('content')
-<div class="py-12" data-plan="{{ $plan }}" data-amount="{{ $amount }}" data-currency="{{ $currency }}">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">Choose Your Payment Method</h1>
-            <p class="text-xl text-gray-600 mb-6">Select your preferred payment method to continue</p>
+<div class="bg-slate-950 min-h-screen pb-20">
+    <!-- Payment Hero -->
+    <section class="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-24 pb-16 overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, #3b82f6 1px, transparent 0); background-size: 32px 32px;"></div>
         </div>
+        <div class="absolute -top-24 -right-24 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full"></div>
+        
+        <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8" data-aos="fade-down">
+                <i class="fas fa-lock mr-2"></i> Secure Checkout
+            </div>
+            <h1 class="text-4xl lg:text-5xl font-black text-white mb-6 tracking-tight" data-aos="fade-up">
+                Finalize Your <span class="text-blue-500">Subscription</span>
+            </h1>
+            <p class="text-slate-400 max-w-xl mx-auto" data-aos="fade-up" data-aos-delay="100">
+                You're just one step away from unlocking premium expert analysis and high-confidence winning selections.
+            </p>
+        </div>
+    </section>
 
-        <!-- Plan Summary -->
-        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Order Summary</h2>
-                    <div class="space-y-3">
-                        <div>
-                            <p class="text-sm text-gray-600">Plan Name</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $pricingPlan->name }}</p>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10" data-plan="{{ $plan }}" data-amount="{{ $amount }}" data-currency="{{ $currency }}">
+        <!-- Order Summary Card -->
+        <div class="bg-slate-900/50 backdrop-blur-xl rounded-[2.5rem] p-8 border border-white/10 mb-12 shadow-2xl" data-aos="fade-up">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex-1 w-full text-center md:text-left">
+                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest mb-4">
+                        Order Summary
+                    </div>
+                    <h2 class="text-2xl font-black text-white mb-6">Plan Details</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                <i class="fas fa-award text-blue-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Selected Plan</p>
+                                <p class="text-lg font-bold text-white leading-tight">{{ $pricingPlan->name }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Duration</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $pricingPlan->duration_days }} days access</p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-white/5">
+                                <i class="fas fa-clock text-slate-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Duration</p>
+                                <p class="text-lg font-bold text-white leading-tight">{{ $pricingPlan->duration_days }} Days Unlimited Access</p>
+                            </div>
                         </div>
-                        @if($pricingPlan->features)
-                        <div>
-                            <p class="text-sm text-gray-600 mb-2">What's Included</p>
-                            <ul class="space-y-1">
-                                @foreach($pricingPlan->features as $feature)
-                                <li class="flex items-center text-sm text-gray-700">
-                                    <i class="fas fa-check text-green-500 mr-2"></i>
-                                    {{ $feature }}
-                                </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
                     </div>
                 </div>
-                <div class="text-right ml-8">
-                    <p class="text-3xl font-bold text-green-600" id="planAmount">{{ $currency }} {{ number_format($amount) }}</p>
-                    <p class="text-sm text-gray-500">One-time payment</p>
-                    <div class="mt-4 p-3 bg-green-50 rounded-lg">
-                        <p class="text-sm text-green-800 font-medium">Premium Access</p>
-                        <p class="text-xs text-green-600">Full features included</p>
+                
+                <div class="bg-slate-800/50 rounded-[2rem] p-8 border border-white/5 text-center min-w-[240px]">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Total Amount</p>
+                    <div class="flex items-baseline justify-center gap-1.5 mb-2">
+                        <span class="text-xl font-bold text-blue-500">{{ $currency }}</span>
+                        <span class="text-5xl font-black text-white tracking-tighter">{{ number_format($amount) }}</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">No Auto-Renewal</p>
+                    <div class="p-3 bg-blue-500/10 rounded-xl border border-blue-500/10">
+                        <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Premium Activation</span>
                     </div>
                 </div>
             </div>
@@ -61,31 +79,27 @@
             <!-- Traditional Payment Methods -->
             @if($traditionalMethods->count() > 0)
             <div class="space-y-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Traditional Payment Methods</h3>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                        <i class="fas fa-credit-card text-blue-500 text-xs"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-tighter">Instant Payment</h3>
+                </div>
                 
                 @foreach($traditionalMethods as $method)
-                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 border-2 border-transparent hover:border-{{ $method->color }}-200">
+                <div class="bg-slate-900/30 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-{{ $method->color }}-500/30 transition-all duration-300 group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center flex-1">
-                            <div class="w-12 h-12 bg-{{ $method->color }}-100 rounded-full flex items-center justify-center mr-4">
-                                <i class="{{ $method->icon }} text-{{ $method->color }}-600 text-xl"></i>
+                            <div class="w-14 h-14 bg-{{ $method->color }}-500/10 rounded-2xl flex items-center justify-center mr-5 border border-{{ $method->color }}-500/20 group-hover:bg-{{ $method->color }}-500 group-hover:text-white transition-all duration-300">
+                                <i class="{{ $method->icon }} text-{{ $method->color }}-500 text-2xl group-hover:text-white"></i>
                             </div>
                             <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-gray-900">{{ $method->display_name }}</h4>
-                                <p class="text-sm text-gray-600 mb-2">{{ $method->description }}</p>
-                                @if($method->config)
-                                    @if($method->type === 'flutterwave')
-                                        <p class="text-xs text-gray-500">Supports cards, bank transfer, mobile money</p>
-                                    @elseif($method->type === 'paypal')
-                                        <p class="text-xs text-gray-500">PayPal account and credit cards accepted</p>
-                                    @elseif($method->type === 'skrill')
-                                        <p class="text-xs text-gray-500">Digital wallet payment</p>
-                                    @endif
-                                @endif
+                                <h4 class="text-white font-black uppercase tracking-tight">{{ $method->display_name }}</h4>
+                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Instant Activation</p>
                             </div>
                         </div>
                         <a href="{{ route('payment.details', ['plan' => $plan, 'amount' => $amount, 'currency' => $currency, 'payment_method' => $method->type]) }}" 
-                           class="bg-{{ $method->color }}-600 text-white px-6 py-2 rounded-lg hover:bg-{{ $method->color }}-700 transition duration-150 font-medium inline-block">
+                           class="py-3 px-6 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-{{ $method->color }}-600 transition-colors">
                             Choose
                         </a>
                     </div>
@@ -97,29 +111,28 @@
             <!-- Cryptocurrency Payment Methods -->
             @if($cryptoMethods->count() > 0)
             <div class="space-y-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Cryptocurrency Payments</h3>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                        <i class="fab fa-bitcoin text-orange-500 text-xs"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-white uppercase tracking-tighter">Crypto Assets</h3>
+                </div>
                 
                 @foreach($cryptoMethods as $method)
-                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 border-2 border-transparent hover:border-{{ $method->color }}-200">
+                <div class="bg-slate-900/30 backdrop-blur-md rounded-3xl p-6 border border-white/5 hover:border-{{ $method->color }}-500/30 transition-all duration-300 group">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center flex-1">
-                            <div class="w-12 h-12 bg-{{ $method->color }}-100 rounded-full flex items-center justify-center mr-4">
-                                <i class="{{ $method->icon }} text-{{ $method->color }}-600 text-xl"></i>
+                            <div class="w-14 h-14 bg-{{ $method->color }}-500/10 rounded-2xl flex items-center justify-center mr-5 border border-{{ $method->color }}-500/20 group-hover:bg-{{ $method->color }}-500 group-hover:text-white transition-all duration-300">
+                                <i class="{{ $method->icon }} text-{{ $method->color }}-500 text-2xl group-hover:text-white"></i>
                             </div>
                             <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-gray-900">{{ $method->display_name }}</h4>
-                                <p class="text-sm text-gray-600 mb-2">{{ $method->description }}</p>
-                                @if($method->config && isset($method->config['address']))
-                                    <p class="text-xs text-gray-500">Address: {{ substr($method->config['address'], 0, 10) }}...{{ substr($method->config['address'], -6) }}</p>
-                                @endif
-                                @if($method->config && isset($method->config['network']))
-                                    <p class="text-xs text-gray-500">Network: {{ strtoupper($method->config['network']) }}</p>
-                                @endif
+                                <h4 class="text-white font-black uppercase tracking-tight">{{ $method->display_name }}</h4>
+                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">{{ strtoupper($method->config['network'] ?? 'Blockchain') }} Network</p>
                             </div>
                         </div>
                         <a href="{{ route('payment.details', ['plan' => $plan, 'amount' => $amount, 'currency' => $currency, 'payment_method' => 'crypto', 'crypto_type' => $method->crypto_type]) }}" 
-                           class="bg-{{ $method->color }}-600 text-white px-6 py-2 rounded-lg hover:bg-{{ $method->color }}-700 transition duration-150 font-medium inline-block">
-                            Choose
+                           class="py-3 px-6 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-{{ $method->color }}-600 transition-colors">
+                            Pay
                         </a>
                     </div>
                 </div>
@@ -128,38 +141,37 @@
             @endif
         </div>
 
-        <!-- What You're Paying For -->
-        <div class="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div class="flex items-start">
-                <i class="fas fa-info-circle text-blue-500 text-xl mr-3 mt-1"></i>
-                <div>
-                    <h4 class="text-lg font-semibold text-blue-800 mb-2">What You're Paying For</h4>
-                    <div class="text-blue-700 space-y-2">
-                        <p><strong>{{ $pricingPlan->name }} Premium Access</strong> - {{ $pricingPlan->duration_days }} days of premium football predictions</p>
-                        @if($pricingPlan->features)
-                        <p class="text-sm">Including: {{ implode(', ', $pricingPlan->features) }}</p>
-                        @endif
-                        <p class="text-sm font-medium">Total: {{ $currency }} {{ number_format($amount) }} (One-time payment)</p>
+        <!-- Security & Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+            <div class="bg-blue-500/5 border border-blue-500/10 rounded-3xl p-6">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-4"></i>
+                    <div>
+                        <h4 class="text-sm font-black text-white uppercase tracking-widest mb-2">Activation Info</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Premium access is usually activated within minutes after successful payment. For crypto, it may take up to 3 confirmations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-green-500/5 border border-green-500/10 rounded-3xl p-6">
+                <div class="flex items-start">
+                    <i class="fas fa-shield-alt text-green-500 mt-1 mr-4"></i>
+                    <div>
+                        <h4 class="text-sm font-black text-white uppercase tracking-widest mb-2">Secure Processing</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            All transactions are encrypted with 256-bit SSL security. We do not store your sensitive financial data on our servers.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Security Notice -->
-        <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-6">
-            <div class="flex items-center">
-                <i class="fas fa-shield-alt text-green-500 text-xl mr-3"></i>
-                <div>
-                    <h4 class="text-lg font-semibold text-green-800">Secure Payment Processing</h4>
-                    <p class="text-green-700">All payments are processed securely. Your payment information is encrypted and protected.</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Back to Pricing -->
-        <div class="mt-8 text-center">
-            <a href="{{ route('pricing') }}" class="text-gray-600 hover:text-gray-800 underline">
-                <i class="fas fa-arrow-left mr-2"></i>
+        <div class="mt-12 text-center pb-20">
+            <a href="{{ route('pricing') }}" class="inline-flex items-center text-slate-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest group">
+                <i class="fas fa-arrow-left mr-3 transition-transform group-hover:-translate-x-1"></i>
                 Back to Pricing Plans
             </a>
         </div>
@@ -167,13 +179,17 @@
 </div>
 
 <!-- Loading Modal -->
-<div id="loadingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <h3 class="text-lg font-medium text-gray-900">Processing Payment</h3>
-            <p class="text-sm text-gray-600 mt-2">Please wait while we initialize your payment...</p>
+<div id="loadingModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex items-center justify-center">
+    <div class="bg-slate-900 border border-white/10 p-10 rounded-[2.5rem] shadow-2xl text-center max-w-sm w-full mx-4">
+        <div class="relative w-20 h-20 mx-auto mb-8">
+            <div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-blue-500">
+                <i class="fas fa-shield-alt text-2xl"></i>
+            </div>
         </div>
+        <h3 class="text-xl font-black text-white mb-3 tracking-tight">Initializing Secure Payment</h3>
+        <p class="text-sm text-slate-400">Please wait while we connect to our secure payment gateway...</p>
     </div>
 </div>
 

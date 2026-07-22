@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'VIP Premium Predictions')
+@section('title', 'Best Betting Tip & Winning Tips for Today - VIP Premium')
+@section('meta_description', 'Get the best betting tip and winning tips for today with our VIP premium selections. 95%+ accuracy for sure tips prediction.')
+@section('meta_keywords', 'best betting tip, winning tips for today, sure tips prediction, accurate football prediction')
 
 @section('content')
 <div class="bg-slate-950 min-h-screen pb-20">
@@ -20,8 +22,8 @@
                         <i class="fas fa-crown mr-2 mb-0.5"></i> Elite VIP Access
                     </div>
                     <h1 class="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
-                        Premium <br>
-                        <span class="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600 bg-clip-text text-transparent italic">Winning</span> Selections
+                        Best Betting <br>
+                        <span class="bg-gradient-to-r from-yellow-300 via-yellow-500 to-yellow-600 bg-clip-text text-transparent italic">Winning Tips</span>
                     </h1>
                     <p class="text-xl text-slate-400 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
                         Gain access to our most accurate, hand-picked predictions. Our VIP algorithm focuses on low-risk, high-probability markets for consistent daily growth.
@@ -99,25 +101,24 @@
                             <span class="text-xs font-bold text-slate-500">{{ $fixture->match_date->format('M d, H:i') }}</span>
                         </div>
 
-                        <!-- Match -->
-                        <div class="space-y-6 mb-10">
-                            <div class="flex items-center justify-between group/team">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center p-2 border border-white/10 group-hover/team:bg-white/10 transition-all">
-                                        <img src="{{ $fixture->home_team_logo }}" class="w-full h-full object-contain">
-                                    </div>
-                                    <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->home_team }}</span>
-                                </div>
-                                <span class="text-xs font-black text-slate-600">H</span>
+                        <!-- Match with score -->
+                        <div class="space-y-4 mb-10 text-center">
+                            <div class="flex items-center justify-center gap-4">
+                                <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->home_team }}</span>
+                                <span class="text-xl text-slate-400">vs</span>
+                                <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->away_team }}</span>
                             </div>
-                            <div class="flex items-center justify-between group/team">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center p-2 border border-white/10 group-hover/team:bg-white/10 transition-all">
-                                        <img src="{{ $fixture->away_team_logo }}" class="w-full h-full object-contain">
-                                    </div>
-                                    <span class="text-base font-black text-white group-hover/team:text-yellow-500 transition-colors">{{ $fixture->away_team }}</span>
-                                </div>
-                                <span class="text-xs font-black text-slate-600">A</span>
+                            <div class="mt-3">
+                                @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
+                                    <span class="text-3xl font-black text-yellow-400 bg-white/10 px-4 py-1.5 rounded-xl">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                    <span class="block text-[10px] text-green-400 font-bold mt-1">FULL TIME</span>
+                                @elseif(in_array($fixture->status, ['LIVE','1H','HT','2H']))
+                                    <span class="text-3xl font-black text-red-400 bg-white/10 px-4 py-1.5 rounded-xl animate-pulse">{{ $fixture->home_goals ?? 0 }} – {{ $fixture->away_goals ?? 0 }}</span>
+                                    <span class="block text-[10px] text-red-400 font-bold mt-1">LIVE</span>
+                                @else
+                                    <span class="text-2xl font-black text-slate-500">––</span>
+                                @endif
+                            </div>
                             </div>
                         </div>
 

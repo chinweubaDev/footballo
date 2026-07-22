@@ -66,7 +66,7 @@
                     @if(isset($league['league']['standings']) && count($league['league']['standings']) > 0)
                         @foreach($league['league']['standings'] as $group)
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table class="min-w-full divide-y divide-gray-200 responsive-table">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
@@ -85,12 +85,12 @@
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         @foreach($group as $team)
                                         <tr class="hover:bg-gray-50 {{ $team['rank'] <= 4 ? 'bg-green-50' : ($team['rank'] >= count($group) - 2 ? 'bg-red-50' : '') }}">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-label="Pos">
                                                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full {{ $team['rank'] <= 4 ? 'bg-green-100 text-green-800' : ($team['rank'] >= count($group) - 2 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
                                                     {{ $team['rank'] }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-6 py-4 whitespace-nowrap" data-label="Team">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-8 w-8">
                                                         <img class="h-8 w-8 rounded-full" src="{{ $team['team']['logo'] }}" alt="{{ $team['team']['name'] }}" onerror="this.src='https://via.placeholder.com/32x32?text=⚽'">
@@ -100,17 +100,17 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['played'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['win'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['draw'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['lose'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['goals']['for'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $team['all']['goals']['against'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 {{ $team['goalsDiff'] > 0 ? 'text-green-600' : ($team['goalsDiff'] < 0 ? 'text-red-600' : 'text-gray-600') }}">
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="P">{{ $team['all']['played'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="W">{{ $team['all']['win'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="D">{{ $team['all']['draw'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="L">{{ $team['all']['lose'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="GF">{{ $team['all']['goals']['for'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="GA">{{ $team['all']['goals']['against'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 {{ $team['goalsDiff'] > 0 ? 'text-green-600' : ($team['goalsDiff'] < 0 ? 'text-red-600' : 'text-gray-600') }}" data-label="GD">
                                                 {{ $team['goalsDiff'] > 0 ? '+' : '' }}{{ $team['goalsDiff'] }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">{{ $team['points'] }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900" data-label="Pts">{{ $team['points'] }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900" data-label="Form">
                                                 <div class="flex space-x-1">
                                                     @foreach(str_split($team['form']) as $result)
                                                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium

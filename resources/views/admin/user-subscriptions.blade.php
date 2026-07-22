@@ -23,7 +23,7 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 responsive-table-admin">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
@@ -36,7 +36,7 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($users as $user)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="User">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
                                     <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
@@ -49,7 +49,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="Subscription">
                             @if($user->hasActiveVVIP())
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                     VVIP
@@ -64,7 +64,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
                             @if($user->hasActiveSubscription())
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     Active
@@ -75,7 +75,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-label="Expires">
                             @if($user->hasActiveVVIP() && $user->vvip_expires_at)
                                 {{ $user->vvip_expires_at->format('M d, Y') }}
                             @elseif($user->hasActiveVIP() && $user->vip_expires_at)
@@ -84,7 +84,7 @@
                                 -
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" data-label="Actions">
                             <div class="flex space-x-2">
                                 <!-- Upgrade/Downgrade Modal Trigger -->
                                 <button onclick="openUserModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->getActiveSubscriptionLevel() }}')" 

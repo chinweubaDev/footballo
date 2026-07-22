@@ -32,7 +32,7 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 responsive-table-admin">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -45,15 +45,15 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($results as $result)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Date">
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ $result->date->format('M d, Y') }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Odds">
                                 <div class="text-sm text-gray-900">{{ $result->odds }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $result->status === 'win' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     @if($result->status === 'win')
@@ -63,13 +63,13 @@
                                     @endif
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Type">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $result->type === 'vip' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                     <i class="fas fa-crown mr-1"></i>{{ strtoupper($result->type) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" data-label="Actions">
                                 <div class="flex space-x-2">
                                     <a href="{{ route('admin.results.edit', $result) }}" class="text-blue-600 hover:text-blue-900">
                                         <i class="fas fa-edit"></i>

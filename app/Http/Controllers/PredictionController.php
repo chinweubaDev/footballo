@@ -11,7 +11,7 @@ class PredictionController extends Controller
     public function index()
     {
         $fixtures = Fixture::with('predictions')
-            ->whereDate('match_date', '>=', today())
+            ->whereDate('match_date', today())
             ->orderBy('match_date')
             ->paginate(20);
 
@@ -44,6 +44,9 @@ class PredictionController extends Controller
         $title = $categories[$category] ?? 'Predictions';
 
         $predictions = Prediction::byCategory($category)
+            ->whereHas('fixture', function ($q) {
+                $q->whereDate('match_date', today());
+            })
             ->with('fixture')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -56,7 +59,7 @@ class PredictionController extends Controller
         $fixtures = Fixture::with(['predictions' => function($query) {
             $query->where('is_premium', true);
         }])
-        ->whereDate('match_date', '>=', today())
+        ->whereDate('match_date', today())
         ->orderBy('match_date')
         ->paginate(20);
 
@@ -71,7 +74,7 @@ class PredictionController extends Controller
             $query->where('is_maxodds', true);
         }])
         ->maxoddsTips()
-        ->whereDate('match_date', '>=', today())
+        ->whereDate('match_date', today())
         ->orderBy('match_date')
         ->paginate(20);
 
@@ -82,12 +85,11 @@ class PredictionController extends Controller
 
     public function over15()
     {
-        $fixtures = Fixture::with(['predictions' => function($query) {
-            $query->where('category', 'Over/Under')->where('tip', 'like', '%1.5%');
-        }])
-        ->whereDate('match_date', '>=', today())
-        ->orderBy('match_date')
-        ->paginate(20);
+        $fixtures = Fixture::with('predictions')
+            ->where('over15', true)
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
 
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
@@ -96,12 +98,11 @@ class PredictionController extends Controller
 
     public function over25()
     {
-        $fixtures = Fixture::with(['predictions' => function($query) {
-            $query->where('category', 'Over/Under')->where('tip', 'like', '%2.5%');
-        }])
-        ->whereDate('match_date', '>=', today())
-        ->orderBy('match_date')
-        ->paginate(20);
+        $fixtures = Fixture::with('predictions')
+            ->where('over25', true)
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
 
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
@@ -110,12 +111,11 @@ class PredictionController extends Controller
 
     public function doubleChance()
     {
-        $fixtures = Fixture::with(['predictions' => function($query) {
-            $query->where('category', 'Double Chance');
-        }])
-        ->whereDate('match_date', '>=', today())
-        ->orderBy('match_date')
-        ->paginate(20);
+        $fixtures = Fixture::with('predictions')
+            ->where('double_chance', true)
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
 
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
@@ -124,12 +124,11 @@ class PredictionController extends Controller
 
     public function bts()
     {
-        $fixtures = Fixture::with(['predictions' => function($query) {
-            $query->where('category', 'Both Teams to Score');
-        }])
-        ->whereDate('match_date', '>=', today())
-        ->orderBy('match_date')
-        ->paginate(20);
+        $fixtures = Fixture::with('predictions')
+            ->where('bts', true)
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
 
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
@@ -138,15 +137,42 @@ class PredictionController extends Controller
 
     public function draw()
     {
-        $fixtures = Fixture::with(['predictions' => function($query) {
-            $query->where('category', '1X2')->where('tip', 'X');
-        }])
-        ->whereDate('match_date', '>=', today())
-        ->orderBy('match_date')
-        ->paginate(20);
+        $fixtures = Fixture::with('predictions')
+            ->where('draw', true)
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
 
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
         return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Draw');
+    }
+
+    public function tomorrow()
+    {
+        $fixtures = Fixture::with('predictions')
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->get();
+
+        $fixturesByLeague = $fixtures->groupBy('league_name');
+
+        return view('predictions.tomorrow', compact('fixturesByLeague', 'fixtures'));
+    }
+
+    /**
+     * Basketball predictions page
+     */
+    public function basketball()
+    {
+        $basketballTips = Fixture::with('predictions')
+            ->where('sport_type', 'basketball')
+            ->whereDate('match_date', today())
+            ->orderBy('match_date')
+            ->paginate(20);
+
+        $fixturesByLeague = $basketballTips->getCollection()->groupBy('league_name');
+
+        return view('basketball.index', compact('basketballTips', 'fixturesByLeague'));
     }
 }

@@ -70,7 +70,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2 ml-1">
                             <label for="password" class="block text-sm font-semibold text-slate-700">Password</label>
-                            <a href="#" class="text-sm font-medium text-primary-600 hover:text-primary-700">Forgot password?</a>
+                            <a href="{{ route('password.request') }}" class="text-sm font-medium text-primary-600 hover:text-primary-700">Forgot password?</a>
                         </div>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

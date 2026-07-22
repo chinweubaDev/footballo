@@ -32,18 +32,8 @@
                     </select>
                 </div>
                 
-                <div class="flex-1 min-w-32">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                    <input type="date" name="date" value="{{ $selectedDate }}" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
-                </div>
-                
-                <div class="flex items-end space-x-2">
-                    <button type="submit" name="action" value="today" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-150 ease-in-out">
-                        Today
-                    </button>
-                    <button type="submit" name="action" value="tomorrow" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-150 ease-in-out">
-                        Tomorrow
-                    </button>
+                <div class="flex items-end">
+                    <input type="hidden" name="date" value="{{ $selectedDate }}">
                     <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-150 ease-in-out">
                         <i class="fas fa-search mr-2"></i>Update
                     </button>
@@ -169,35 +159,19 @@
             <div class="bg-white rounded-lg shadow-lg p-12 text-center">
                 <div class="text-gray-500">
                     <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                    <p class="text-lg">No upcoming matches found</p>
-                    <p class="text-sm">Try selecting a different league or date</p>
+                    <p class="text-lg">No matches found for today</p>
+                    <p class="text-sm">Try selecting a different league</p>
                 </div>
             </div>
         @endif
 
         <!-- Quick Date Navigation -->
         <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Date Navigation</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Today's Matches</h3>
             <div class="flex flex-wrap gap-2">
-                @php
-                    $dates = [];
-                    for($i = -3; $i <= 7; $i++) {
-                        $dates[] = \Carbon\Carbon::now()->addDays($i);
-                    }
-                @endphp
-                @foreach($dates as $date)
-                    <a href="{{ route('match.upcoming', ['league' => $selectedLeague, 'date' => $date->format('Y-m-d')]) }}" 
-                       class="px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out
-                              {{ $selectedDate === $date->format('Y-m-d') ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        @if($date->isToday())
-                            Today
-                        @elseif($date->isTomorrow())
-                            Tomorrow
-                        @else
-                            {{ $date->format('M d') }}
-                        @endif
-                    </a>
-                @endforeach
+                <span class="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white">
+                    Today
+                </span>
             </div>
         </div>
     </div>

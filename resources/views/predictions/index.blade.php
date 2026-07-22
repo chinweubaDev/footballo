@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'All Football Predictions')
+@section('title', 'Best Betting Tip & Accurate Football Prediction')
+@section('meta_description', 'Get the best betting tip and accurate football prediction for today. Our expert analysts provide winning tips for today across all markets.')
+@section('meta_keywords', 'bet tips, best betting tip, accurate football prediction, winning tips for today, sure tips prediction')
 
 @section('content')
 <div class="bg-slate-50 min-h-screen pb-20">
@@ -12,7 +14,7 @@
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
                 <div data-aos="fade-right">
-                    <h1 class="text-4xl lg:text-5xl font-black text-white mb-4">All Predictions</h1>
+                    <h1 class="text-4xl lg:text-5xl font-black text-white mb-4">Accurate Football Prediction for Today</h1>
                     <p class="text-slate-400 text-lg max-w-xl">Browse our complete database of daily football predictions across major leagues and markets.</p>
                 </div>
                 

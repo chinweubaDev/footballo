@@ -43,14 +43,7 @@ class MatchController extends Controller
     public function upcoming(Request $request)
     {
         $selectedLeague = $request->get('league', '39'); // Default to Premier League
-        $selectedDate = $request->get('date', date('Y-m-d'));
-        
-        // Handle quick date navigation
-        if ($request->get('action') === 'today') {
-            $selectedDate = date('Y-m-d');
-        } elseif ($request->get('action') === 'tomorrow') {
-            $selectedDate = date('Y-m-d', strtotime('+1 day'));
-        }
+        $selectedDate = date('Y-m-d'); // Always today
         
         // Get upcoming matches from API
         $matches = $this->apiFootballService->getUpcomingMatches($selectedLeague, $selectedDate);

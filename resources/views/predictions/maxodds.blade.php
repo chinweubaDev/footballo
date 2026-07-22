@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Maxodds High-Value Predictions')
+@section('title', 'Sure Tips Prediction - High Value Maxodds Betting Tips')
+@section('meta_description', 'High value sure tips prediction and best betting tip for max odds. Accurate football prediction for major market mispricings.')
+@section('meta_keywords', 'sure tips prediction, best betting tip, accurate football prediction, max odds tips')
 
 @section('content')
 <div class="bg-slate-900 min-h-screen pb-20 overflow-hidden">
@@ -17,8 +19,8 @@
                 <i class="fas fa-rocket mr-2"></i> High Risk • High Reward
             </div>
             <h1 class="text-5xl lg:text-7xl font-black text-white mb-8 tracking-tighter">
-                Maxodds <br>
-                <span class="bg-gradient-to-r from-purple-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent">Mega Value</span>
+                Sure Tips <br>
+                <span class="bg-gradient-to-r from-purple-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent">Mega Prediction</span>
             </h1>
             <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-12">
                 Our Maxodds strategy identifies significant market mispricings and high-margin opportunities that conventional models often overlook.
@@ -121,7 +123,12 @@
                                 </div>
                                 
                                 <div class="flex flex-col items-center shrink-0">
-                                    <div class="text-xs font-black text-slate-300 mb-2 uppercase tracking-[0.3em]">VS</div>
+                                    @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
+                                        <div class="text-2xl font-black text-slate-900 mb-2">{{ $fixture->home_goals }} - {{ $fixture->away_goals }}</div>
+                                        <div class="text-[10px] font-bold text-green-600 uppercase tracking-widest">FINAL</div>
+                                    @else
+                                        <div class="text-2xl font-black text-slate-300 mb-2">--</div>
+                                    @endif
                                     <div class="h-12 w-px bg-slate-200/50"></div>
                                     <div class="text-[9px] font-black text-slate-400 mt-2 uppercase tracking-widest">{{ $fixture->match_date->format('H:i') }}</div>
                                 </div>
