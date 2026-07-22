@@ -55,3 +55,126 @@ body {
 .maxodds-badge {
     @apply bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full;
 }
+
+/* =============================================
+   Mobile-Responsive Tables — Card Layout
+   Converts tables to stacked cards on mobile
+   so all columns are visible at once.
+   ============================================= */
+@media (max-width: 639px) {
+    .responsive-table {
+        display: block;
+    }
+    .responsive-table thead {
+        display: none;
+    }
+    .responsive-table tbody {
+        display: block;
+    }
+    .responsive-table tr {
+        display: block;
+        background: #fff;
+        border-radius: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        border: 1px solid #e2e8f0;
+    }
+    .responsive-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 0 !important;
+        border: none !important;
+        text-align: right !important;
+        gap: 0.5rem;
+    }
+    .responsive-table td::before {
+        content: attr(data-label);
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .responsive-table td:first-child {
+        border-top: none !important;
+    }
+    /* Keep inline elements left-aligned inside td */
+    .responsive-table td > * {
+        flex-shrink: 0;
+    }
+    .responsive-table td .flex.items-center {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 639px) {
+    /* Green-themed card variant for sure picks */
+    .responsive-table-green thead { display: none; }
+    .responsive-table-green tbody { display: block; }
+    .responsive-table-green tr {
+        display: block;
+        background: #f0fdf4;
+        border-radius: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        border: 1px solid #bbf7d0;
+    }
+    .responsive-table-green td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 0 !important;
+        border: none !important;
+        text-align: right !important;
+        gap: 0.5rem;
+    }
+    .responsive-table-green td::before {
+        content: attr(data-label);
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #166534;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 639px) {
+    /* Dark-themed card variant for admin tables */
+    .responsive-table-admin thead { display: none; }
+    .responsive-table-admin tbody { display: block; }
+    .responsive-table-admin tr {
+        display: block;
+        background: #fff;
+        border-radius: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        border: 1px solid #e5e7eb;
+    }
+    .responsive-table-admin td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 0 !important;
+        border: none !important;
+        text-align: right !important;
+        gap: 0.5rem;
+    }
+    .responsive-table-admin td::before {
+        content: attr(data-label);
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #6b7280;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
