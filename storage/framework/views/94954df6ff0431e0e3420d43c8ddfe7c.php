@@ -1,10 +1,8 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'VVIP Tips'); ?>
+<?php $__env->startSection('meta_description', 'Experience the ultimate betting advantage with VVIP tips. Get our most confident predictions and personalized support.'); ?>
+<?php $__env->startSection('meta_keywords', 'vvip tips, elite predictions, guaranteed tips, high stakes, professional handicapper'); ?>
 
-@section('title', 'VVIP Tips')
-@section('meta_description', 'Experience the ultimate betting advantage with VVIP tips. Get our most confident predictions and personalized support.')
-@section('meta_keywords', 'vvip tips, elite predictions, guaranteed tips, high stakes, professional handicapper')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <!-- VVIP Header -->
 <section class="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800">
     <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
@@ -39,7 +37,7 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Access Control Check -->
-    @if(!auth()->check())
+    <?php if(!auth()->check()): ?>
         <div class="bg-red-50 border border-red-200 rounded-2xl p-6 mb-8" data-aos="fade-up">
             <div class="flex items-center">
                 <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
@@ -51,7 +49,7 @@
                 </div>
             </div>
         </div>
-    @elseif(!auth()->user()->hasActiveVVIP())
+    <?php elseif(!auth()->user()->hasActiveVVIP()): ?>
         <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-8" data-aos="fade-up">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -63,15 +61,15 @@
                         <p class="text-yellow-600">You need an active VVIP subscription to access these tips.</p>
                     </div>
                 </div>
-                <a href="{{ route('pricing') }}" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold">
+                <a href="<?php echo e(route('pricing')); ?>" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold">
                     <i class="fas fa-gem mr-2"></i>
                     Upgrade to VVIP
                 </a>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 
-    @if(auth()->check() && auth()->user()->hasActiveVVIP())
+    <?php if(auth()->check() && auth()->user()->hasActiveVVIP()): ?>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- VVIP Accumulator Tickets -->
             <div class="lg:col-span-2">
@@ -83,92 +81,92 @@
                                 VVIP Accumulator Tips
                             </h2>
                             <span class="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
-                                {{ count($tickets) }} Accas Today
+                                <?php echo e(count($tickets)); ?> Accas Today
                             </span>
                         </div>
                     </div>
                     
                     <div class="p-6">
-                        @if(count($tickets) > 0)
+                        <?php if(count($tickets) > 0): ?>
                             <div class="space-y-8">
-                                @foreach($tickets as $ticket)
-                                <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ $loop->index * 150 }}">
-                                    {{-- Ticket Header --}}
+                                <?php $__currentLoopData = $tickets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ticket): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="<?php echo e($loop->index * 150); ?>">
+                                    
                                     <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 flex items-center justify-between">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                                 <i class="fas fa-gem text-white"></i>
                                             </div>
                                             <div>
-                                                <span class="text-white text-xs font-black uppercase tracking-widest opacity-70">Accumulator #{{ $ticket['ticket_number'] }}</span>
-                                                <h3 class="text-white font-black text-lg leading-tight">VVIP Acca {{ $ticket['ticket_number'] }}</h3>
+                                                <span class="text-white text-xs font-black uppercase tracking-widest opacity-70">Accumulator #<?php echo e($ticket['ticket_number']); ?></span>
+                                                <h3 class="text-white font-black text-lg leading-tight">VVIP Acca <?php echo e($ticket['ticket_number']); ?></h3>
                                             </div>
                                         </div>
                                         <div class="text-right">
                                             <span class="text-white/60 text-[10px] font-black uppercase tracking-widest block">Total Odds</span>
-                                            <span class="text-2xl font-black text-yellow-300">{{ number_format($ticket['total_odds'], 2) }}</span>
+                                            <span class="text-2xl font-black text-yellow-300"><?php echo e(number_format($ticket['total_odds'], 2)); ?></span>
                                         </div>
                                     </div>
 
-                                    {{-- Legs --}}
+                                    
                                     <div class="p-6">
                                         <div class="space-y-3">
-                                            @foreach($ticket['legs'] as $leg)
+                                            <?php $__currentLoopData = $ticket['legs']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $leg): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                             <div class="flex items-center justify-between bg-white rounded-xl p-4 border border-slate-100 hover:border-purple-200 transition-colors">
                                                 <div class="flex items-center gap-3 flex-1 min-w-0">
                                                     <div class="w-1.5 h-10 bg-purple-500 rounded-full flex-shrink-0"></div>
                                                     <div class="min-w-0">
                                                         <div class="flex items-center gap-2 flex-wrap">
-                                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ $leg['fixture']->league_name }}</span>
-                                                            <span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{{ $leg['fixture']->match_date->format('H:i') }}</span>
+                                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest"><?php echo e($leg['fixture']->league_name); ?></span>
+                                                            <span class="text-[10px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full"><?php echo e($leg['fixture']->match_date->format('H:i')); ?></span>
                                                         </div>
-                                                        <p class="text-sm font-bold text-slate-900 truncate">{{ $leg['fixture']->home_team }} vs {{ $leg['fixture']->away_team }}</p>
-                                                        <span class="text-xs font-bold text-purple-600">{{ $leg['prediction']->tip }}</span>
+                                                        <p class="text-sm font-bold text-slate-900 truncate"><?php echo e($leg['fixture']->home_team); ?> vs <?php echo e($leg['fixture']->away_team); ?></p>
+                                                        <span class="text-xs font-bold text-purple-600"><?php echo e($leg['prediction']->tip); ?></span>
                                                     </div>
                                                 </div>
                                                 <div class="text-right flex-shrink-0 ml-4">
                                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Odds</span>
-                                                    <span class="text-lg font-black text-slate-900">{{ number_format($leg['odds'], 2) }}</span>
+                                                    <span class="text-lg font-black text-slate-900"><?php echo e(number_format($leg['odds'], 2)); ?></span>
                                                 </div>
                                             </div>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
 
-                                        {{-- Ticket Footer --}}
+                                        
                                         <div class="mt-4 flex items-center justify-between bg-purple-50 rounded-xl px-5 py-3">
                                             <div class="flex items-center gap-4">
                                                 <div>
                                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Legs</span>
-                                                    <span class="text-sm font-bold text-slate-900">{{ count($ticket['legs']) }} Matches</span>
+                                                    <span class="text-sm font-bold text-slate-900"><?php echo e(count($ticket['legs'])); ?> Matches</span>
                                                 </div>
                                                 <div class="w-px h-8 bg-purple-200"></div>
                                                 <div>
                                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Avg Confidence</span>
-                                                    <span class="text-sm font-bold text-green-600">{{ $ticket['avg_confidence'] }}%</span>
+                                                    <span class="text-sm font-bold text-green-600"><?php echo e($ticket['avg_confidence']); ?>%</span>
                                                 </div>
                                             </div>
                                             <div class="text-right">
                                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Combined Odds</span>
-                                                <span class="text-xl font-black text-purple-600">{{ number_format($ticket['total_odds'], 2) }}</span>
+                                                <span class="text-xl font-black text-purple-600"><?php echo e(number_format($ticket['total_odds'], 2)); ?></span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                        @else
+                        <?php else: ?>
                             <div class="text-center py-12">
                                 <div class="w-20 h-20 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                                     <i class="fas fa-gem text-purple-600 text-3xl"></i>
                                 </div>
                                 <h3 class="text-2xl font-bold text-slate-900 mb-4">No VVIP Accumulators Available</h3>
                                 <p class="text-slate-600 mb-6">Our elite analysts are preparing today's top-tier accumulator selections. Check back shortly.</p>
-                                <a href="{{ route('predictions') }}" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold">
+                                <a href="<?php echo e(route('predictions')); ?>" class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 font-semibold">
                                     <i class="fas fa-chart-line mr-2"></i>
                                     View All Predictions
                                 </a>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -191,21 +189,21 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm text-slate-600">Expires</span>
-                                <span class="text-sm font-semibold text-slate-900">{{ auth()->user()->vvip_expires_at->format('M d, Y') }}</span>
+                                <span class="text-sm font-semibold text-slate-900"><?php echo e(auth()->user()->vvip_expires_at->format('M d, Y')); ?></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm text-slate-600">Days Remaining</span>
-                                <span class="text-sm font-semibold text-green-600">{{ auth()->user()->vvip_expires_at->diffInDays(now()) }} days</span>
+                                <span class="text-sm font-semibold text-green-600"><?php echo e(auth()->user()->vvip_expires_at->diffInDays(now())); ?> days</span>
                             </div>
                         </div>
 
                         <div class="mt-6">
                             <div class="w-full bg-slate-200 rounded-full h-2">
                                 <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-300" 
-                                     style="width: {{ auth()->user()->vvip_expires_at->diffInDays(now()) > 0 ? min(100, (auth()->user()->vvip_expires_at->diffInDays(now()) / 30) * 100) : 0 }}%"></div>
+                                     style="width: <?php echo e(auth()->user()->vvip_expires_at->diffInDays(now()) > 0 ? min(100, (auth()->user()->vvip_expires_at->diffInDays(now()) / 30) * 100) : 0); ?>%"></div>
                             </div>
                             <p class="text-xs text-slate-500 mt-2 text-center">
-                                {{ auth()->user()->vvip_expires_at->diffInDays(now()) }} days remaining
+                                <?php echo e(auth()->user()->vvip_expires_at->diffInDays(now())); ?> days remaining
                             </p>
                         </div>
                     </div>
@@ -265,19 +263,19 @@
                     </div>
                     <div class="p-6">
                         <div class="space-y-3">
-                            <a href="{{ route('tips.vip') }}" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
+                            <a href="<?php echo e(route('tips.vip')); ?>" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
                                 <i class="fas fa-crown text-blue-500 mr-3"></i>
                                 <span class="text-sm font-medium text-slate-700">VIP Tips</span>
                             </a>
-                            <a href="{{ route('predictions') }}" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
+                            <a href="<?php echo e(route('predictions')); ?>" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
                                 <i class="fas fa-chart-line text-green-500 mr-3"></i>
                                 <span class="text-sm font-medium text-slate-700">All Predictions</span>
                             </a>
-                            <a href="{{ route('dashboard') }}" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
+                            <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
                                 <i class="fas fa-tachometer-alt text-purple-500 mr-3"></i>
                                 <span class="text-sm font-medium text-slate-700">Dashboard</span>
                             </a>
-                            <a href="{{ route('profile') }}" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
+                            <a href="<?php echo e(route('profile')); ?>" class="flex items-center p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
                                 <i class="fas fa-user text-orange-500 mr-3"></i>
                                 <span class="text-sm font-medium text-slate-700">Profile</span>
                             </a>
@@ -286,6 +284,7 @@
                 </div>
             </div>
         </div>
-    @endif
+    <?php endif; ?>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Users/simeonuba/Downloads/public_html (1)/resources/views/tips/vvip.blade.php ENDPATH**/ ?>

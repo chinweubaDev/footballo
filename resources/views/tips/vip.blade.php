@@ -26,7 +26,7 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="300">
                 <div class="inline-flex items-center px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl backdrop-blur-sm">
                     <i class="fas fa-chart-line mr-3"></i>
-                    <span>{{ $tips->total() }} Tips Available</span>
+                    <span>3 VIP Accumulators Today</span>
                 </div>
                 <div class="inline-flex items-center px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl backdrop-blur-sm">
                     <i class="fas fa-trophy mr-3"></i>
@@ -73,95 +73,96 @@
 
     @if(auth()->check() && auth()->user()->hasActiveVIP())
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- VIP Tips Content -->
+            <!-- VIP Accumulator Tickets -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden" data-aos="fade-up">
                     <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-blue-200">
                         <div class="flex items-center justify-between">
                             <h2 class="text-2xl font-bold text-slate-900 flex items-center">
                                 <i class="fas fa-crown mr-3 text-blue-600"></i>
-                                VIP Tips
+                                VIP Accumulator Tips
                             </h2>
                             <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                                {{ $tips->total() }} Tips Available
+                                {{ count($tickets) }} Accas Today
                             </span>
                         </div>
                     </div>
                     
                     <div class="p-6">
-                        @if($tips->count() > 0)
-                            <!-- VIP Tips from Database -->
-                            <div class="space-y-6">
-                                @foreach($tips as $tip)
-                                <div class="bg-gradient-to-r from-blue-50 to-white border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-200 {{ $tip->featured ? 'ring-2 ring-blue-500' : '' }}" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                                    @if($tip->featured)
-                                    <div class="flex items-center mb-4">
-                                        <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
-                                            <i class="fas fa-star mr-1"></i>Featured
-                                        </span>
-                                    </div>
-                                    @endif
-                                    
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="flex items-center">
-                                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full mr-3">
-                                                VIP
-                                            </span>
-                                            @if($tip->league_name)
-                                                <span class="text-sm text-slate-600">{{ $tip->league_name }}</span>
-                                            @endif
+                        @if(count($tickets) > 0)
+                            <div class="space-y-8">
+                                @foreach($tickets as $ticket)
+                                <div class="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300" data-aos="fade-up" data-aos-delay="{{ $loop->index * 150 }}">
+                                    {{-- Ticket Header --}}
+                                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                                <i class="fas fa-ticket-alt text-white"></i>
+                                            </div>
+                                            <div>
+                                                <span class="text-white text-xs font-black uppercase tracking-widest opacity-70">Accumulator #{{ $ticket['ticket_number'] }}</span>
+                                                <h3 class="text-white font-black text-lg leading-tight">VIP Acca {{ $ticket['ticket_number'] }}</h3>
+                                            </div>
                                         </div>
-                                        @if($tip->predictions->isNotEmpty())
-                                            <span class="text-sm font-semibold text-slate-900 bg-slate-100 px-3 py-1 rounded-full">{{ $tip->predictions->first()->tip }}</span>
-                                        @endif
-                                    </div>
-                                    
-                                    <h3 class="text-xl font-bold text-slate-900 mb-3">{{ $tip->home_team }} vs {{ $tip->away_team }}</h3>
-                                    
-                                    @if($tip->predictions->isNotEmpty() && $tip->predictions->first()->vip_tip_content)
-                                        <p class="text-slate-600 mb-4 leading-relaxed">{{ $tip->predictions->first()->vip_tip_content }}</p>
-                                    @endif
-                                    
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-4">
-                                            <span class="text-sm text-slate-500 flex items-center">
-                                                <i class="fas fa-calendar mr-2"></i>
-                                                {{ $tip->match_date->format('M d, Y H:i') }}
-                                            </span>
+                                        <div class="text-right">
+                                            <span class="text-white/60 text-[10px] font-black uppercase tracking-widest block">Total Odds</span>
+                                            <span class="text-2xl font-black text-yellow-300">{{ number_format($ticket['total_odds'], 2) }}</span>
                                         </div>
-                                        
-                                        <div class="flex items-center space-x-3">
-                                            @if($tip->predictions->isNotEmpty() && $tip->predictions->first()->odds)
-                                                <span class="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                                                    Odds: {{ $tip->predictions->first()->odds }}
-                                                </span>
-                                            @endif
-                                            
-                                            <span class="text-sm font-medium px-3 py-1 rounded-full 
-                                                @if($tip->status === 'won') bg-green-100 text-green-800
-                                                @elseif($tip->status === 'lost') bg-red-100 text-red-800
-                                                @elseif($tip->status === 'void') bg-yellow-100 text-yellow-800
-                                                @else bg-blue-100 text-blue-800
-                                                @endif">
-                                                {{ ucfirst($tip->status) }}
-                                            </span>
+                                    </div>
+
+                                    {{-- Legs --}}
+                                    <div class="p-6">
+                                        <div class="space-y-3">
+                                            @foreach($ticket['legs'] as $leg)
+                                            <div class="flex items-center justify-between bg-white rounded-xl p-4 border border-slate-100 hover:border-blue-200 transition-colors">
+                                                <div class="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div class="w-1.5 h-10 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                                    <div class="min-w-0">
+                                                        <div class="flex items-center gap-2 flex-wrap">
+                                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ $leg['fixture']->league_name }}</span>
+                                                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{{ $leg['fixture']->match_date->format('H:i') }}</span>
+                                                        </div>
+                                                        <p class="text-sm font-bold text-slate-900 truncate">{{ $leg['fixture']->home_team }} vs {{ $leg['fixture']->away_team }}</p>
+                                                        <span class="text-xs font-bold text-primary-600">{{ $leg['prediction']->tip }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="text-right flex-shrink-0 ml-4">
+                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Odds</span>
+                                                    <span class="text-lg font-black text-slate-900">{{ number_format($leg['odds'], 2) }}</span>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+
+                                        {{-- Ticket Footer --}}
+                                        <div class="mt-4 flex items-center justify-between bg-blue-50 rounded-xl px-5 py-3">
+                                            <div class="flex items-center gap-4">
+                                                <div>
+                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Legs</span>
+                                                    <span class="text-sm font-bold text-slate-900">{{ count($ticket['legs']) }} Matches</span>
+                                                </div>
+                                                <div class="w-px h-8 bg-blue-200"></div>
+                                                <div>
+                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Avg Confidence</span>
+                                                    <span class="text-sm font-bold text-green-600">{{ $ticket['avg_confidence'] }}%</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Combined Odds</span>
+                                                <span class="text-xl font-black text-blue-600">{{ number_format($ticket['total_odds'], 2) }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 @endforeach
-                            </div>
-                            
-                            <!-- Pagination -->
-                            <div class="mt-8">
-                                {{ $tips->links() }}
                             </div>
                         @else
                             <div class="text-center py-12">
                                 <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                                     <i class="fas fa-info-circle text-blue-600 text-3xl"></i>
                                 </div>
-                                <h3 class="text-2xl font-bold text-slate-900 mb-4">No VIP Tips Available</h3>
-                                <p class="text-slate-600 mb-6">Check back later for new VIP predictions.</p>
+                                <h3 class="text-2xl font-bold text-slate-900 mb-4">No VIP Accumulators Available</h3>
+                                <p class="text-slate-600 mb-6">Our analysts are preparing today's high-confidence accumulator picks. Check back shortly.</p>
                                 <a href="{{ route('predictions') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-semibold">
                                     <i class="fas fa-chart-line mr-2"></i>
                                     View All Predictions
@@ -222,23 +223,23 @@
                         <ul class="space-y-4">
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">Daily VIP Tips</span>
+                                <span class="text-sm text-slate-600">3 VIP Accumulators Daily</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span class="text-sm text-slate-600">3 Matches per Acca (9 Picks)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span class="text-sm text-slate-600">99-100% Confidence Picks</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                <span class="text-sm text-slate-600">Combined Odds Displayed</span>
                             </li>
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>
                                 <span class="text-sm text-slate-600">Expert Analysis</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">Premium Support</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">Live Updates</span>
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">Priority Access</span>
                             </li>
                         </ul>
                     </div>

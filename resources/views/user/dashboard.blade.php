@@ -181,6 +181,12 @@
                                              style="width: {{ $vvipStatus['days_remaining'] > 0 ? min(100, ($vvipStatus['days_remaining'] / 30) * 100) : 0 }}%"></div>
                                     </div>
                                 </div>
+
+                                <a href="{{ route('tips.vvip') }}" class="mt-6 w-full inline-flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-500 hover:to-indigo-500 transition-all font-black text-sm uppercase tracking-widest shadow-xl hover:shadow-purple-500/30 group">
+                                    <i class="fas fa-gem text-lg group-hover:scale-110 transition-transform"></i>
+                                    View Today's VVIP Accumulators
+                                    <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </a>
                             </div>
                         </div>
                     @elseif($vipStatus['is_active'])
@@ -212,6 +218,12 @@
                                              style="width: {{ $vipStatus['days_remaining'] > 0 ? min(100, ($vipStatus['days_remaining'] / 30) * 100) : 0 }}%"></div>
                                     </div>
                                 </div>
+
+                                <a href="{{ route('tips.vip') }}" class="mt-6 w-full inline-flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-2xl hover:from-blue-500 hover:to-cyan-500 transition-all font-black text-sm uppercase tracking-widest shadow-xl hover:shadow-blue-500/30 group">
+                                    <i class="fas fa-crown text-lg group-hover:scale-110 transition-transform"></i>
+                                    View Today's VIP Accumulators
+                                    <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </a>
                             </div>
                         </div>
                         
