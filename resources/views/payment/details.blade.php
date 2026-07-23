@@ -3,7 +3,6 @@
 @section('title', 'Payment Details - Football Predictions')
 
 @section('content')
-@section('content')
 <div class="bg-slate-950 min-h-screen pb-20">
     <!-- Details Hero -->
     <section class="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-24 pb-16 overflow-hidden">

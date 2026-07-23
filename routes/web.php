@@ -57,6 +57,8 @@ Route::get('/payment/methods', [App\Http\Controllers\PaymentController::class, '
 Route::get('/payment/details/{plan}', [App\Http\Controllers\PaymentController::class, 'showPaymentDetails'])->name('payment.details');
 Route::get('/payment/crypto', [App\Http\Controllers\PaymentController::class, 'cryptoPayment'])->name('payment.crypto');
 Route::get('/payment/mock', [App\Http\Controllers\PaymentController::class, 'mockPayment'])->name('payment.mock');
+Route::post('/payment/initialize', [App\Http\Controllers\PaymentController::class, 'initialize'])->name('payment.initialize');
+Route::get('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
 
 // Basketball
 Route::get('/basketball', [App\Http\Controllers\PredictionController::class, 'basketball'])->name('basketball');
