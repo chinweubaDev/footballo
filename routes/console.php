@@ -10,3 +10,6 @@ Schedule::command('scores:update-live')->everyFiveMinutes()->between('12:00', '2
 
 // Generate basketball predictions daily at 7 AM
 Schedule::command('predictions:basketball')->dailyAt('07:00');
+
+// Deactivate expired user subscriptions every hour
+Schedule::command('users:deactivate-expired')->hourly();

@@ -921,7 +921,7 @@ class AdminController extends Controller
             'duration_days' => 'required|integer|min:1|max:365'
         ]);
 
-        $durationDays = $request->duration_days;
+        $durationDays = (int) $request->duration_days;
         
         if ($request->subscription_type === 'vip') {
             $user->upgradeToVIP($durationDays);
@@ -929,6 +929,10 @@ class AdminController extends Controller
         } else {
             $user->upgradeToVVIP($durationDays);
             $message = "User upgraded to VVIP for {$durationDays} days.";
+        }
+
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => $message]);
         }
 
         return redirect()->back()->with('success', $message);
