@@ -58,10 +58,20 @@
                                 {{ $fixture->match_date->format('M d, Y H:i') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
+                                @php
+                                    $terminalStates = ['FT','AET','PEN','WO'];
+                                    $liveStates = ['LIVE','1H','2H','HT','ET','BT'];
+                                @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {{ $fixture->status === 'finished' ? 'bg-green-100 text-green-800' : 
-                                       ($fixture->status === 'live' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
-                                    {{ ucfirst($fixture->status) }}
+                                    {{ in_array($fixture->status, $terminalStates) ? 'bg-green-100 text-green-800' : 
+                                       (in_array($fixture->status, $liveStates) ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
+                                    @if(in_array($fixture->status, $terminalStates))
+                                        <i class="fas fa-check mr-1"></i>{{ $fixture->status }}
+                                    @elseif(in_array($fixture->status, $liveStates))
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1 animate-pulse"></span>{{ $fixture->status }}
+                                    @else
+                                        {{ $fixture->status }}
+                                    @endif
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap" data-label="Flags">

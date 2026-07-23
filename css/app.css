@@ -55,3 +55,130 @@ body {
 .maxodds-badge {
     @apply bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full;
 }
+
+/* =============================================
+   Responsive Tables — Card Layout
+   Converts tables to stacked cards on mobile/tablet
+   so all columns are visible at once.
+   ============================================= */
+
+/* --- Small screens: card layout (phones, small tablets) --- */
+@media (max-width: 767px) {
+    .responsive-table,
+    .responsive-table-green,
+    .responsive-table-admin {
+        display: block;
+        width: 100%;
+    }
+    .responsive-table thead,
+    .responsive-table-green thead,
+    .responsive-table-admin thead {
+        display: none;
+    }
+    .responsive-table tbody,
+    .responsive-table-green tbody,
+    .responsive-table-admin tbody {
+        display: block;
+    }
+    .responsive-table tr,
+    .responsive-table-green tr,
+    .responsive-table-admin tr {
+        display: block;
+        background: #fff;
+        border-radius: 1rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        border: 1px solid #e2e8f0;
+    }
+    .responsive-table td,
+    .responsive-table-green td,
+    .responsive-table-admin td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4rem 0 !important;
+        border: none !important;
+        text-align: right !important;
+        gap: 0.5rem;
+        min-height: 2rem;
+    }
+    .responsive-table td::before,
+    .responsive-table-green td::before,
+    .responsive-table-admin td::before {
+        content: attr(data-label);
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .responsive-table td:first-child,
+    .responsive-table-green td:first-child,
+    .responsive-table-admin td:first-child {
+        border-top: none !important;
+    }
+    .responsive-table td > *,
+    .responsive-table-green td > *,
+    .responsive-table-admin td > * {
+        flex-shrink: 0;
+    }
+    .responsive-table td .flex.items-center,
+    .responsive-table-green td .flex.items-center,
+    .responsive-table-admin td .flex.items-center {
+        justify-content: flex-end;
+    }
+    /* Fix for match column with team logos — wrap on small screens */
+    .responsive-table td[data-label="Match"] .flex.items-center,
+    .responsive-table-green td[data-label="Match"] .flex.items-center {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.25rem;
+    }
+    /* Prevent score text from being hidden */
+    .responsive-table td[data-label="Score"] span,
+    .responsive-table-green td[data-label="Score"] span {
+        white-space: nowrap;
+    }
+}
+
+/* --- Medium screens: horizontal scroll fallback (768px-1023px) --- */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .responsive-table,
+    .responsive-table-green,
+    .responsive-table-admin {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .responsive-table table,
+    .responsive-table-green table,
+    .responsive-table-admin table {
+        width: 100%;
+        min-width: 700px;
+    }
+}
+
+/* Green variant overrides */
+@media (max-width: 767px) {
+    .responsive-table-green tr {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+    .responsive-table-green td::before {
+        color: #166534;
+    }
+}
+
+/* Admin variant overrides */
+@media (max-width: 767px) {
+    .responsive-table-admin tr {
+        border-color: #e5e7eb;
+    }
+    .responsive-table-admin td::before {
+        color: #6b7280;
+    }
+}
