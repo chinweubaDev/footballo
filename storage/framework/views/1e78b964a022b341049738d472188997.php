@@ -376,7 +376,7 @@
                             <li><a href="<?php echo e(route('predictions')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">All Predictions</a></li>
                             <li><a href="<?php echo e(route('tips.vip')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">VIP Tips</a></li>
                             <li><a href="<?php echo e(route('tips.vvip')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">VVIP Tips</a></li>
-                            <li><a href="<?php echo e(route('predictions.tomorrow')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">Tomorrow's Tips</a></li>
+                            <li><a href="<?php echo e(route('predictions.tomorrow')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">Today's Tips</a></li>
                             <li><a href="<?php echo e(route('pricing')); ?>" class="text-slate-300 hover:text-white transition-colors duration-200">Pricing</a></li>
                         </ul>
                     </div>

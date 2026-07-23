@@ -53,7 +53,10 @@ class PaymentController extends Controller
 
     public function showPaymentDetails(Request $request)
     {
-        // Validate required parameters
+        // Validate required parameters — plan comes from route {plan},
+        // so we merge it into the request explicitly for validation
+        $request->merge(['plan' => $request->route('plan')]);
+
         $request->validate([
             'plan' => 'required|string',
             'amount' => 'required|numeric|min:0',
@@ -71,7 +74,16 @@ class PaymentController extends Controller
             return redirect()->route('pricing')->with('error', 'Selected plan not found.');
         }
 
-        // Get the payment method details from database
+        // Log the incoming request for debugging
+        Log::info('showPaymentDetails called', [
+            'plan' => $request->plan,
+            'amount' => $request->amount,
+            'currency' => $request->currency,
+            'payment_method' => $request->payment_method,
+            'crypto_type' => $request->crypto_type,
+        ]);
+
+        // Get the payment method details from database — try exact type match first
         $paymentMethod = PaymentMethod::where('type', $request->payment_method)
             ->when($request->crypto_type, function($query, $cryptoType) {
                 return $query->where('crypto_type', $cryptoType);
@@ -79,8 +91,11 @@ class PaymentController extends Controller
             ->where('is_active', true)
             ->first();
 
-        // Fallback: try without is_active filter in case seeder didn't set it
         if (!$paymentMethod) {
+            Log::info('Payment method not found with is_active, trying without filter', [
+                'type' => $request->payment_method,
+            ]);
+            // Fallback: try without is_active filter
             $paymentMethod = PaymentMethod::where('type', $request->payment_method)
                 ->when($request->crypto_type, function($query, $cryptoType) {
                     return $query->where('crypto_type', $cryptoType);
@@ -89,11 +104,21 @@ class PaymentController extends Controller
         }
 
         if (!$paymentMethod) {
+            // Count all payment methods in DB for debugging
+            $totalMethods = PaymentMethod::count();
+            $allTypes = PaymentMethod::pluck('type')->toArray();
+
+            Log::warning('Payment method still not found', [
+                'requested_type' => $request->payment_method,
+                'total_methods_in_db' => $totalMethods,
+                'all_types_in_db' => $allTypes,
+            ]);
+
             return redirect()->route('payment.methods', [
                 'plan' => $request->plan,
                 'amount' => $request->amount,
                 'currency' => $request->currency
-            ])->with('error', 'Selected payment method not found.');
+            ])->with('error', 'Selected payment method not found. Available: ' . implode(', ', $allTypes ?: ['none']));
         }
 
         return view('payment.details', [
