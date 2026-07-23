@@ -23,6 +23,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Cards, Bank Transfer, Mobile Money',
                 'icon' => 'fas fa-credit-card',
                 'color' => 'blue',
+                'is_active' => true,
                 'config' => [
                     'public_key' => '',
                     'secret_key' => '',
@@ -37,6 +38,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'PayPal Account & Cards',
                 'icon' => 'fab fa-paypal',
                 'color' => 'blue',
+                'is_active' => true,
                 'config' => [
                     'client_id' => '',
                     'client_secret' => '',
@@ -51,6 +53,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Digital Wallet',
                 'icon' => 'fas fa-wallet',
                 'color' => 'orange',
+                'is_active' => true,
                 'config' => [
                     'email' => '',
                     'api_key' => ''
@@ -65,6 +68,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Cryptocurrency',
                 'icon' => 'fab fa-bitcoin',
                 'color' => 'orange',
+                'is_active' => true,
                 'config' => [
                     'address' => '',
                     'network' => 'bitcoin'
@@ -79,6 +83,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Stablecoin',
                 'icon' => 'fas fa-coins',
                 'color' => 'green',
+                'is_active' => true,
                 'config' => [
                     'address' => '',
                     'network' => 'tron'
@@ -93,6 +98,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Cryptocurrency',
                 'icon' => 'fab fa-ethereum',
                 'color' => 'blue',
+                'is_active' => true,
                 'config' => [
                     'address' => '',
                     'network' => 'ethereum'
@@ -107,6 +113,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Cryptocurrency',
                 'icon' => 'fas fa-coins',
                 'color' => 'yellow',
+                'is_active' => true,
                 'config' => [
                     'address' => '',
                     'network' => 'bsc'
@@ -121,6 +128,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Cryptocurrency',
                 'icon' => 'fas fa-coins',
                 'color' => 'red',
+                'is_active' => true,
                 'config' => [
                     'address' => '',
                     'network' => 'tron'
@@ -134,6 +142,7 @@ class PaymentMethodSeeder extends Seeder
                 'description' => 'Nigerian Bank Accounts',
                 'icon' => 'fas fa-university',
                 'color' => 'emerald',
+                'is_active' => true,
                 'config' => [
                     'bank_name' => 'GTBank / Access Bank',
                     'account_number' => '0123456789',

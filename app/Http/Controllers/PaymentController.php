@@ -79,6 +79,15 @@ class PaymentController extends Controller
             ->where('is_active', true)
             ->first();
 
+        // Fallback: try without is_active filter in case seeder didn't set it
+        if (!$paymentMethod) {
+            $paymentMethod = PaymentMethod::where('type', $request->payment_method)
+                ->when($request->crypto_type, function($query, $cryptoType) {
+                    return $query->where('crypto_type', $cryptoType);
+                })
+                ->first();
+        }
+
         if (!$paymentMethod) {
             return redirect()->route('payment.methods', [
                 'plan' => $request->plan,
