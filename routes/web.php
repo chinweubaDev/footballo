@@ -53,10 +53,10 @@ Route::get('/dashboard', [App\Http\Controllers\UserController::class, 'dashboard
 Route::get('/profile', [App\Http\Controllers\UserController::class, 'profile'])->name('profile');
 
 // Payment
-Route::get('/payment/methods', [App\Http\Controllers\PaymentController::class, 'methods'])->name('payment.methods');
-Route::get('/payment/details/{plan}', [App\Http\Controllers\PaymentController::class, 'details'])->name('payment.details');
-Route::get('/payment/crypto', [App\Http\Controllers\PaymentController::class, 'crypto'])->name('payment.crypto');
-Route::get('/payment/mock', [App\Http\Controllers\PaymentController::class, 'mock'])->name('payment.mock');
+Route::get('/payment/methods', [App\Http\Controllers\PaymentController::class, 'showPaymentMethods'])->name('payment.methods');
+Route::get('/payment/details/{plan}', [App\Http\Controllers\PaymentController::class, 'showPaymentDetails'])->name('payment.details');
+Route::get('/payment/crypto', [App\Http\Controllers\PaymentController::class, 'cryptoPayment'])->name('payment.crypto');
+Route::get('/payment/mock', [App\Http\Controllers\PaymentController::class, 'mockPayment'])->name('payment.mock');
 
 // Basketball
 Route::get('/basketball', [App\Http\Controllers\PredictionController::class, 'basketball'])->name('basketball');
