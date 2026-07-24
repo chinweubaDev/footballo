@@ -34,12 +34,16 @@ class BlogAutomationService
 
                 try {
                     $tags = $this->generateTags($category, $article);
-                    $excerpt = $article['description'] ?? Str::limit(strip_tags($article['content'] ?? ''), 160);
+                    $rawContent = $article['content'] ?? $article['description'] ?? 'No content available.';
+                    // Strip NewsAPI truncation like "… [+10295 chars]"
+                    $rawContent = preg_replace('/\s*\x{2026}\s*\[\+\d+\s*chars?\]\s*$/u', '', $rawContent);
+                    $rawContent = preg_replace('/\s*\[\+\d+\s*chars?\]\s*$/i', '', $rawContent);
+                    $excerpt = $article['description'] ?? Str::limit(strip_tags($rawContent), 160);
 
                     BlogPost::create([
                         'title' => $article['title'],
                         'slug' => $slug,
-                        'content' => $article['content'] ?? $article['description'] ?? 'No content available.',
+                        'content' => $rawContent,
                         'excerpt' => $excerpt,
                         'featured_image' => $article['urlToImage'] ?? null,
                         'category' => $category,

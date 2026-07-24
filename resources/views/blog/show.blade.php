@@ -39,8 +39,23 @@
         </header>
 
         {{-- Content --}}
-        <div class="prose prose-lg prose-invert max-w-none mb-12" data-aos="fade-up">
-            {!! nl2br(e($post->content)) !!}
+        <div class="text-slate-200 text-base md:text-lg leading-relaxed space-y-4 mb-12" data-aos="fade-up">
+            @foreach(explode("\n", $post->content) as $paragraph)
+                @php $trimmed = trim($paragraph); @endphp
+                @if(!empty($trimmed))
+                    @if(preg_match('/^## (.+)/', $trimmed, $m))
+                        <h2 class="text-xl md:text-2xl font-black text-white mt-8 mb-4">{{ $m[1] }}</h2>
+                    @elseif(preg_match('/^\*\*(.+)\*\*/', $trimmed, $m))
+                        <p class="font-bold text-white text-lg">{{ $m[1] }}{{ substr($trimmed, strlen($m[0])) }}</p>
+                    @elseif(preg_match('/^• (.+)/', $trimmed, $m))
+                        <li class="text-slate-300 ml-4 list-disc">{{ $m[1] }}</li>
+                    @elseif(preg_match('/^---/', $trimmed))
+                        <hr class="border-white/10 my-8">
+                    @else
+                        <p>{{ $trimmed }}</p>
+                    @endif
+                @endif
+            @endforeach
         </div>
 
         {{-- Tags --}}
