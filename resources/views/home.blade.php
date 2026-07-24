@@ -202,8 +202,9 @@
                                         </td>
                                         <td class="px-6 py-4 text-center" data-label="Score">
                                             @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
-                                                <span class="inline-flex items-center px-3 py-1.5 bg-slate-800 text-white rounded-xl font-black text-base">
-                                                    {{ $fixture->home_goals }} <span class="text-slate-400 mx-0.5 text-xs">–</span> {{ $fixture->away_goals }}
+                                                @php $scoreWon = $prediction->status === 'won'; @endphp
+                                                <span class="inline-flex items-center px-3 py-1.5 rounded-xl font-black text-base {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">
+                                                    {{ $fixture->home_goals }} <span class="mx-0.5 text-xs opacity-60">–</span> {{ $fixture->away_goals }}
                                                 </span>
                                             @elseif(in_array($fixture->status, ['LIVE','1H','HT','2H']))
                                                 <span class="inline-flex flex-col items-center px-3 py-1.5 bg-red-500 text-white rounded-xl font-black">
@@ -242,6 +243,7 @@
         @endif
     </div>
 </section>
+
 <!-- Premium Tips Promo -->
 <section class="mb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -328,7 +330,8 @@
                             </td>
                             <td class="px-6 py-4 text-center" data-label="Score">
                                 @if(in_array($tip->status, ['FT','AET','PEN']))
-                                    <span class="font-black text-slate-900 bg-slate-100 px-2 py-1 rounded-lg">{{ $tip->home_goals }} – {{ $tip->away_goals }}</span>
+                                    @php $spPred = $tip->predictions->first(); $scoreWon = $spPred && $spPred->status === 'won'; @endphp
+                                    <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $tip->home_goals }} – {{ $tip->away_goals }}</span>
                                 @else
                                     <span class="text-slate-300 font-bold">––</span>
                                 @endif
@@ -450,7 +453,8 @@
                                     </td>
                                     <td class="px-6 py-4 text-center" data-label="Score">
                                         @if(in_array($fixture->status, ['FT','AET','PEN']))
-                                            <span class="font-black bg-slate-100 px-2 py-1 rounded-lg">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                            @php $scoreWon = $prediction->status === 'won'; @endphp
+                                            <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
                                         @else
                                             <span class="text-slate-300 font-bold">––</span>
                                         @endif
@@ -540,6 +544,57 @@
         @endif
     </div>
 </section>
+
+{{-- Blog Section --}}
+@if($blogPosts->count() > 0)
+<section class="py-24 bg-white relative overflow-hidden">
+    <div class="absolute top-0 left-0 p-8 opacity-[0.03]">
+        <i class="fas fa-newspaper text-[200px] -rotate-12"></i>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12" data-aos="fade-up">
+            <div class="max-w-2xl">
+                <h2 class="text-sm font-black text-primary-600 uppercase tracking-[0.2em] mb-3">Football News</h2>
+                <h3 class="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">Latest Soccer Updates</h3>
+                <p class="text-lg text-slate-500">Stay informed with the latest football news, match previews, and expert analysis.</p>
+            </div>
+            <a href="{{ route('blog.category', 'soccer') }}" class="mt-6 md:mt-0 inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-2xl font-bold text-sm hover:bg-primary-700 transition-all shadow-lg hover:shadow-primary-600/20 group">
+                More Articles <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($blogPosts as $post)
+            <a href="{{ route('blog.show', $post->slug) }}" class="group bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-xl hover:border-primary-500/30 transition-all duration-300" data-aos="fade-up">
+                <div class="h-44 bg-slate-100 overflow-hidden relative">
+                    @if($post->featured_image)
+                        <img src="{{ $post->featured_image }}" alt="{{ $post->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+                            <i class="fas fa-futbol text-6xl text-primary-300/50"></i>
+                        </div>
+                    @endif
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                    <span class="absolute top-4 left-4 px-3 py-1 bg-primary-600/90 text-white text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-sm">Soccer</span>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+                        <i class="far fa-calendar-alt text-primary-500"></i>
+                        <span>{{ $post->published_at->format('M d, Y') }}</span>
+                    </div>
+                    <h4 class="text-base font-black text-slate-900 group-hover:text-primary-600 transition-colors leading-snug line-clamp-2 mb-2">{{ $post->title }}</h4>
+                    <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed">{{ $post->excerpt }}</p>
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400">{{ $post->author }}</span>
+                        <span class="text-xs font-bold text-primary-600 group-hover:translate-x-1 transition-transform">Read More <i class="fas fa-arrow-right ml-1"></i></span>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 
 <!-- Premium CTA Banner -->
 <section class="py-24">

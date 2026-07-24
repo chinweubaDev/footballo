@@ -114,7 +114,8 @@
                             </td>
                             <td class="px-6 py-4 text-center" data-label="Score">
                                 @if(in_array($fixture->status, ['FT','AET','PEN']))
-                                    <span class="font-black bg-green-100 text-green-800 px-2 py-1 rounded-lg">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                    @php $scoreWon = $prediction->status === 'won'; @endphp
+                                    <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
                                 @elseif(in_array($fixture->status, ['LIVE','1H','2H','HT','ET','BT']))
                                     <span class="font-black bg-red-100 text-red-700 px-2 py-1 rounded-lg">{{ $fixture->home_goals ?? 0 }} – {{ $fixture->away_goals ?? 0 }}</span>
                                 @else

@@ -137,6 +137,23 @@ class ApiFootballServiceEnhanced
         return $this->request('/players', ['team' => $teamId, 'season' => $season]);
     }
 
+    // ═══ INJURIES ═══════════════════════════════════════
+
+    public function getInjuriesByFixture(int $fixtureId): ?array
+    {
+        return $this->request('/injuries', ['fixture' => $fixtureId], true);
+    }
+
+    public function getInjuriesByTeam(int $teamId, int $season): ?array
+    {
+        return $this->request('/injuries', ['team' => $teamId, 'season' => $season], true);
+    }
+
+    public function getInjuriesByLeague(int $leagueId, int $season): ?array
+    {
+        return $this->request('/injuries', ['league' => $leagueId, 'season' => $season], true);
+    }
+
     // ═══ FIXTURE DETAILS ════════════════════════════════
 
     public function getFixtureEvents(int $fixtureId): ?array

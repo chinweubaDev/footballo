@@ -8,16 +8,46 @@ use Illuminate\Http\Request;
 
 class PredictionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fixtures = Fixture::with('predictions')
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
+        $query = Fixture::with('predictions')
+            ->whereDate('match_date', today());
 
+        // Filter by league
+        if ($request->league) {
+            $query->where('league_name', $request->league);
+        }
+
+        // Filter by prediction category
+        if ($request->category) {
+            $catMap = [
+                '1X2' => '1X2',
+                'Over/Under' => 'Over/Under',
+                'Both Teams to Score' => 'Both Teams to Score',
+                'BTS' => 'Both Teams to Score',
+                'Double Chance' => 'Double Chance',
+                'Draw' => 'Draw',
+            ];
+            $dbCat = $catMap[$request->category] ?? null;
+            if ($dbCat) {
+                $query->whereHas('predictions', function ($q) use ($dbCat) {
+                    $q->where('category', $dbCat);
+                });
+            }
+        }
+
+        $fixtures = $query->orderBy('match_date')->paginate(20);
         $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
 
-        return view('predictions.index', compact('fixturesByLeague', 'fixtures'));
+        // Get distinct leagues for the filter dropdown
+        $leagues = Fixture::whereDate('match_date', today())
+            ->whereNotNull('league_name')
+            ->distinct()
+            ->pluck('league_name')
+            ->sort()
+            ->values();
+
+        return view('predictions.index', compact('fixturesByLeague', 'fixtures', 'leagues'));
     }
 
     public function expertTips()

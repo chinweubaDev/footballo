@@ -63,6 +63,12 @@ Route::get('/payment/callback', [App\Http\Controllers\PaymentController::class, 
 // Basketball
 Route::get('/basketball', [App\Http\Controllers\PredictionController::class, 'basketball'])->name('basketball');
 
+// Blog
+Route::get('/blog', [App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/category/{category}', [App\Http\Controllers\BlogController::class, 'category'])->name('blog.category');
+Route::get('/blog/tag/{tag}', [App\Http\Controllers\BlogController::class, 'byTag'])->name('blog.tag');
+Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
 // SEO
 Route::get('/sitemap.xml', [App\Http\Controllers\HomeController::class, 'sitemap'])->name('sitemap');
 
@@ -111,6 +117,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/pricing', [AdminController::class, 'storePricing'])->name('pricing.store');
     Route::put('/pricing/{plan}', [AdminController::class, 'updatePricing'])->name('pricing.update');
     Route::delete('/pricing/{plan}', [AdminController::class, 'deletePricing'])->name('pricing.delete');
+
+    // Blog
+    Route::get('/blog', [App\Http\Controllers\Admin\AdminBlogController::class, 'index'])->name('blog.index');
+    Route::get('/blog/create', [App\Http\Controllers\Admin\AdminBlogController::class, 'create'])->name('blog.create');
+    Route::post('/blog', [App\Http\Controllers\Admin\AdminBlogController::class, 'store'])->name('blog.store');
+    Route::get('/blog/{post}/edit', [App\Http\Controllers\Admin\AdminBlogController::class, 'edit'])->name('blog.edit');
+    Route::put('/blog/{post}', [App\Http\Controllers\Admin\AdminBlogController::class, 'update'])->name('blog.update');
+    Route::delete('/blog/{post}', [App\Http\Controllers\Admin\AdminBlogController::class, 'destroy'])->name('blog.destroy');
+    Route::post('/blog/{post}/toggle', [App\Http\Controllers\Admin\AdminBlogController::class, 'toggleStatus'])->name('blog.toggle');
 
     // Payment Methods
     Route::get('/payment-methods', [AdminController::class, 'paymentMethods'])->name('payment-methods');

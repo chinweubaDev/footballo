@@ -124,7 +124,8 @@
                                 
                                 <div class="flex flex-col items-center shrink-0">
                                     @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
-                                        <div class="text-2xl font-black text-slate-900 mb-2">{{ $fixture->home_goals }} - {{ $fixture->away_goals }}</div>
+                                        @php $mxScoreWon = $prediction->status === 'won'; @endphp
+                                        <div class="text-2xl font-black px-3 py-1 rounded-lg mb-2 inline-block {{ $mxScoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} - {{ $fixture->away_goals }}</div>
                                         <div class="text-[10px] font-bold text-green-600 uppercase tracking-widest">FINAL</div>
                                     @else
                                         <div class="text-2xl font-black text-slate-300 mb-2">--</div>

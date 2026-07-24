@@ -29,11 +29,11 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // Fallback: show any upcoming if no today tips flagged
+        // Fallback: show any fixtures for today (prefer finished/live so scores display)
         if ($todayTips->isEmpty()) {
             $todayTips = Fixture::with('predictions')
                 ->whereDate('match_date', today())
-                ->where('status', 'NS')
+                ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
                 ->orderBy('match_date')
                 ->limit(5)
                 ->get();
@@ -57,11 +57,11 @@ class HomeController extends Controller
             ->limit(15)
             ->get();
 
-        // Fallback: if no featured fixtures, use any upcoming fixtures
+        // Fallback: use any fixtures for today (prefer finished/live so scores display)
         if ($featuredPredictions->isEmpty()) {
             $featuredPredictions = Fixture::with('predictions')
                 ->whereDate('match_date', today())
-                ->where('status', 'NS')
+                ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
                 ->orderBy('match_date')
                 ->limit(15)
                 ->get();
@@ -92,7 +92,7 @@ class HomeController extends Controller
         if ($surePicksTips->isEmpty()) {
             $surePicksTips = Fixture::with('predictions')
                 ->whereDate('match_date', today())
-                ->where('status', 'NS')
+                ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
                 ->orderBy('match_date')
                 ->limit(4)
                 ->get();
@@ -125,10 +125,17 @@ class HomeController extends Controller
             $liveFixtures = [];
         }
 
+        // Get latest soccer blog posts for homepage
+        $blogPosts = \App\Models\BlogPost::published()
+            ->byCategory('soccer')
+            ->orderBy('published_at', 'desc')
+            ->limit(6)
+            ->get();
+
         return view('home', compact(
             'todayTipsByLeague', 'featuredByLeague',
             'vipResults', 'vvipResults', 'surePicksTips',
-            'basketballTips', 'liveFixtures'
+            'basketballTips', 'liveFixtures', 'blogPosts'
         ));
     }
 

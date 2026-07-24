@@ -29,7 +29,8 @@
                         </div>
                         <div class="text-center px-4">
                             @if(in_array($tip->status, ['FT', 'AET', 'PEN']))
-                                <span class="text-xl font-black text-slate-900">{{ $tip->home_goals }} - {{ $tip->away_goals }}</span>
+                                @php $tipPrediction = $tip->predictions->first(); $scoreWon = $tipPrediction && $tipPrediction->status === 'won'; @endphp
+                                <span class="text-xl font-black px-3 py-1 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $tip->home_goals }} - {{ $tip->away_goals }}</span>
                             @else
                                 <span class="text-lg font-bold text-slate-300">--</span>
                             @endif

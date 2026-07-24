@@ -48,9 +48,10 @@
                             </div>
                             
                             @if($tip->status === 'FT' || $tip->status === 'AET')
+                                @php $bbPred = $tip->predictions->first(); $scoreWon = $bbPred && $bbPred->status === 'won'; @endphp
                             <div class="text-center px-4">
-                                <span class="text-2xl font-black text-slate-900">{{ $tip->home_goals }} - {{ $tip->away_goals }}</span>
-                                <span class="block text-xs text-green-600 font-bold mt-1">FINAL</span>
+                                <span class="text-2xl font-black px-3 py-1 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $tip->home_goals }} - {{ $tip->away_goals }}</span>
+                                <span class="block text-xs font-bold mt-1 {{ $scoreWon ? 'text-green-400' : 'text-slate-500' }}">{{ $scoreWon ? '✅ WON' : '❌ LOST' }}</span>
                             </div>
                             @else
                             <span class="text-lg font-black text-slate-300 mx-4">VS</span>

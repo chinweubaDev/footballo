@@ -83,7 +83,10 @@
                                         <span class="text-sm font-bold text-slate-800">{{ $fixture->home_team }}</span>
                                     </div>
                                     <span class="text-xs font-black {{ in_array($fixture->status, ['FT','AET','PEN']) ? 'text-green-600' : 'text-slate-300' }}">
-                                        @if(in_array($fixture->status, ['FT','AET','PEN'])) {{ $fixture->home_goals }} - {{ $fixture->away_goals }} @else -- @endif
+                                        @if(in_array($fixture->status, ['FT','AET','PEN']))
+                                            @php $scoreWon = $prediction->status === 'won'; @endphp
+                                            <span class="font-bold px-2 py-0.5 rounded {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} - {{ $fixture->away_goals }}</span>
+                                        @else -- @endif
                                     </span>
                                 </div>
                                 <div class="flex items-center justify-between">

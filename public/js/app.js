@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-hide alerts after 5 seconds
-    const alerts = document.querySelectorAll('.bg-green-100, .bg-red-100, .bg-yellow-100');
+    // Auto-hide alerts after 5 seconds (only target actual alert messages, not score badges)
+    const alerts = document.querySelectorAll('[role="alert"]');
     alerts.forEach(alert => {
         setTimeout(() => {
             alert.style.transition = 'opacity 0.5s ease-out';
@@ -36,23 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
-    // Filter functionality for predictions
-    const leagueFilter = document.getElementById('leagueFilter');
-    const categoryFilter = document.getElementById('categoryFilter');
-    
-    if (leagueFilter) {
-        leagueFilter.addEventListener('change', filterPredictions);
-    }
-    
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', filterPredictions);
-    }
-
-    function filterPredictions() {
-        // This would implement client-side filtering
-        console.log('Filtering predictions...');
-    }
 
     // Smooth scrolling for anchor links
     const anchorLinks = document.querySelectorAll('a[href^="#"]');

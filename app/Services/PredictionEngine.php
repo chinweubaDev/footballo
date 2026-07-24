@@ -39,6 +39,14 @@ class PredictionEngine
 
         $s = $this->blend($odds, $apiPred, $h2h, $hf, $af, $hs, $as, $st);
 
+        // Fetch injuries for both teams
+        $injuries = $this->fetchInjuries($hid, $aid, $lid, $sid);
+
+        // Adjust confidence based on injuries
+        if ($injuries['home_missing'] > 0 || $injuries['away_missing'] > 0) {
+            $s = $this->applyInjuryAdjustment($s, $injuries);
+        }
+
         return [
             '1x2'           => $this->p1X2($s, $odds),
             'double_chance' => $this->pDC($s),
@@ -51,7 +59,7 @@ class PredictionEngine
             'half_time'     => $this->pHT($s),
             'xg_home'       => round($s['hxg'], 1),
             'xg_away'       => round($s['axg'], 1),
-            'analysis'      => $this->analysis($fixture, $s, $odds, $h2h, $st, $apiPred),
+            'analysis'      => $this->analysis($fixture, $s, $odds, $h2h, $st, $apiPred, $injuries),
         ];
     }
 
@@ -156,33 +164,59 @@ class PredictionEngine
     }
 
     // ═══════════════════════════════════════════════
-    //  SIGNAL BLENDING
+    //  SIGNAL BLENDING — v4 Improved Accuracy
     // ═══════════════════════════════════════════════
+    //
+    // Weighting: 30% odds, 25% form, 20% stats/xG, 15% H2H, 10% AI
+    // This prioritises real performance data over market noise.
 
     protected function blend(array $o, array $a, array $h2h, array $hf, array $af, array $hs, array $as, array $st): array
     {
-        // 40% odds, 30% AI, 15% stats, 10% form, 5% H2H
+        // ── Odds-implied probabilities (market wisdom) ──
         $ho = $o['home_imp'] ?: 42; $do = $o['draw_imp'] ?: 26; $ao = $o['away_imp'] ?: 32;
-        $ha = $a['hp'] ?: 42; $da = $a['dp'] ?: 26; $aa = $a['ap'] ?: 32;
-        $hfS = ($hf['ppg'] / 3) * 100; $afS = ($af['ppg'] / 3) * 100;
 
-        $home = $ho * 0.40 + $ha * 0.30 + $hfS * 0.10 + ($h2h['home_win_rate'] ?? 40) * 0.05 + max(0, ($st['position_diff'] ?? 0)) * 0.3 + 5;
-        $draw = $do * 0.40 + $da * 0.30 + 25 * 0.10 + ($h2h['draw_rate'] ?? 25) * 0.05 + 10;
-        $away = $ao * 0.40 + $aa * 0.30 + $afS * 0.10 + ($h2h['away_win_rate'] ?? 30) * 0.05 + max(0, -($st['position_diff'] ?? 0)) * 0.3 + 5;
+        // ── Form strength (recent performance is the strongest indicator) ──
+        $hfS = min(($hf['ppg'] / 3) * 100, 95);
+        $afS = min(($af['ppg'] / 3) * 100, 95);
+        $hfGoals = $hf['goals_for'] > 0 ? ($hf['goals_for'] / max($hf['goals_for'] + $hf['goals_against'], 1)) * 100 : 50;
+        $afGoals = $af['goals_for'] > 0 ? ($af['goals_for'] / max($af['goals_for'] + $af['goals_against'], 1)) * 100 : 50;
 
-        $t = $home + $draw + $away;
-        $home = ($home / $t) * 100; $draw = ($draw / $t) * 100; $away = ($away / $t) * 100;
-
-        // xG from season stats
+        // ── xG from season stats ──
         $hg = floatval($hs['avg_goals_for_home'] ?: 1.5);
         $ag = floatval($as['avg_goals_for_away'] ?: 1.0);
         $hc = floatval($hs['avg_goals_against_home'] ?: 1.0);
         $ac = floatval($as['avg_goals_against_away'] ?: 1.5);
         $hxg = ($hg + $ac) / 2;
         $axg = ($ag + $hc) / 2;
+        $xGHomeAdvantage = $hxg > $axg ? min(($hxg / max($axg, 0.1)) * 15, 30) : 0;
+        $xAwayDisadvantage = $axg > $hxg ? min(($axg / max($hxg, 0.1)) * 10, 20) : 0;
+
+        // ── H2H signals ──
+        $h2hHome = $h2h['home_win_rate'] ?? 40;
+        $h2hAway = $h2h['away_win_rate'] ?? 30;
+        $h2hDraw = $h2h['draw_rate'] ?? 25;
+
+        // ── AI prediction ──
+        $ha = $a['hp'] ?: 42; $da = $a['dp'] ?: 26; $aa = $a['ap'] ?: 32;
+
+        // ── Standings ──
+        $posDiff = $st['position_diff'] ?? 0; // positive = home placed higher
+        $standingBonus = $posDiff > 0 ? min($posDiff * 1.5, 15) : max($posDiff * 1.0, -10);
+
+        // ── Weighted blend: 30% odds, 25% form, 20% xG, 15% H2H, 10% AI ──
+        $home = $ho * 0.30 + $hfS * 0.20 + $hfGoals * 0.05 + $xGHomeAdvantage + $h2hHome * 0.15 + $ha * 0.10 + $standingBonus;
+        $draw = $do * 0.30 + 22 * 0.25 + 20 * 0.20 + $h2hDraw * 0.15 + $da * 0.10 + 8;
+        $away = $ao * 0.30 + $afS * 0.20 + $afGoals * 0.05 + $xAwayDisadvantage + $h2hAway * 0.15 + $aa * 0.10 - $standingBonus * 0.5;
+
+        // Normalise to percentages
+        $t = $home + $draw + $away;
+        if ($t <= 0) { $home = 45; $draw = 25; $away = 30; $t = 100; }
+        else { $home = ($home / $t) * 100; $draw = ($draw / $t) * 100; $away = ($away / $t) * 100; }
 
         // BTTS blend
-        $bp = ($o['bts_imp'] ?: 50) * 0.55 + ((($hs['bts_total'] / max($hs['played_total'], 1)) * 50) + (($as['bts_total'] / max($as['played_total'], 1)) * 50)) * 0.45;
+        $btsForm = ((($hf['bts_rate'] ?? 40) + ($af['bts_rate'] ?? 40)) / 2);
+        $btsH2H = $h2h['bts_rate'] ?? 45;
+        $bp = ($o['bts_imp'] ?: 50) * 0.35 + $btsForm * 0.35 + $btsH2H * 0.30;
 
         return [
             'home_win_prob' => round($home, 1), 'draw_prob' => round($draw, 1), 'away_win_prob' => round($away, 1),
@@ -265,31 +299,186 @@ class PredictionEngine
     }
 
     // ═══════════════════════════════════════════════
+    //  INJURIES, LINEUPS & PLAYER STATS
+    // ═══════════════════════════════════════════════
+
+    /**
+     * Fetch injuries for both teams in a fixture.
+     */
+    protected function fetchInjuries(int $homeTeamId, int $awayTeamId, int $leagueId, int $season): array
+    {
+        $homeInjuries = $this->api->getInjuriesByTeam($homeTeamId, $season);
+        $awayInjuries = $this->api->getInjuriesByTeam($awayTeamId, $season);
+
+        $homeList = [];
+        $awayList = [];
+
+        if ($homeInjuries && !empty($homeInjuries['response'])) {
+            foreach ($homeInjuries['response'] as $inj) {
+                if (($inj['team']['id'] ?? 0) === $homeTeamId) {
+                    $homeList[] = [
+                        'name' => $inj['player']['name'] ?? 'Unknown',
+                        'reason' => $inj['player']['reason'] ?? 'Unknown',
+                        'type' => $inj['player']['type'] ?? 'Injury',
+                    ];
+                }
+            }
+        }
+
+        if ($awayInjuries && !empty($awayInjuries['response'])) {
+            foreach ($awayInjuries['response'] as $inj) {
+                if (($inj['team']['id'] ?? 0) === $awayTeamId) {
+                    $awayList[] = [
+                        'name' => $inj['player']['name'] ?? 'Unknown',
+                        'reason' => $inj['player']['reason'] ?? 'Unknown',
+                        'type' => $inj['player']['type'] ?? 'Injury',
+                    ];
+                }
+            }
+        }
+
+        return [
+            'home_injuries' => $homeList,
+            'away_injuries' => $awayList,
+            'home_missing' => count($homeList),
+            'away_missing' => count($awayList),
+            'total_missing' => count($homeList) + count($awayList),
+            'has_injuries' => count($homeList) + count($awayList) > 0,
+        ];
+    }
+
+    /**
+     * Adjust probabilities based on injuries.
+     * Missing key players reduces a team's win probability.
+     */
+    protected function applyInjuryAdjustment(array $s, array $injuries): array
+    {
+        $homePenalty = min($injuries['home_missing'] * 3, 15);  // up to -15%
+        $awayPenalty = min($injuries['away_missing'] * 3, 15);  // up to -15%
+
+        $s['home_win_prob'] = max($s['home_win_prob'] - $homePenalty, 10);
+        $s['away_win_prob'] = max($s['away_win_prob'] - $awayPenalty, 10);
+        $s['draw_prob'] = min($s['draw_prob'] + ($homePenalty + $awayPenalty) * 0.5, 60);
+
+        // Re-normalise
+        $t = $s['home_win_prob'] + $s['draw_prob'] + $s['away_win_prob'];
+        if ($t > 0) {
+            $s['home_win_prob'] = ($s['home_win_prob'] / $t) * 100;
+            $s['draw_prob'] = ($s['draw_prob'] / $t) * 100;
+            $s['away_win_prob'] = ($s['away_win_prob'] / $t) * 100;
+        }
+
+        return $s;
+    }
+
+    // ═══════════════════════════════════════════════
     //  ANALYSIS
     // ═══════════════════════════════════════════════
 
-    protected function analysis(Fixture $f, array $s, array $o, array $h2h, array $st, array $a): string
+    protected function analysis(Fixture $f, array $s, array $o, array $h2h, array $st, array $a, array $injuries = []): string
     {
-        $p = [];
-        $p[] = "⚽ **{$f->home_team} vs {$f->away_team}** — {$f->league_name}";
+        $lines = [];
 
-        if ($o['home_odds'] > 0)
-            $p[] = "💰 **{$o['bookmaker']}**: H {$o['home_odds']} | D {$o['draw_odds']} | A {$o['away_odds']} | O2.5 {$o['over25_odds']} | BTTS Yes {$o['bts_yes']}";
-        if ($a['advice'])
-            $p[] = "🤖 **AI**: {$a['advice']}";
-        if ($h2h['matches'] > 0)
-            $p[] = "📋 **H2H**: {$h2h['matches']} matches, {$f->home_team} wins {$h2h['home_win_rate']}%, O2.5 {$h2h['over25_rate']}%, BTTS {$h2h['bts_rate']}%";
+        // Determine best pick and confidence
+        $probs = ['Home Win' => $s['home_win_prob'], 'Draw' => $s['draw_prob'], 'Away Win' => $s['away_win_prob']];
+        arsort($probs);
+        $bestPick = array_key_first($probs);
+        $bestConf = round(reset($probs));
+        $secondConf = round(next($probs));
+
+        // Confidence rating
+        $confidenceLevel = $bestConf > 88 ? 'HIGH' : ($bestConf > 80 ? 'GOOD' : ($bestConf > 60 ? 'MODERATE' : 'SPECULATIVE'));
+        $confidenceEmoji = $bestConf > 88 ? '🟢' : ($bestConf > 80 ? '🟡' : ($bestConf > 60 ? '🟠' : '🔴'));
+
+        $lines[] = "⚽ **{$f->home_team} vs {$f->away_team}**";
+        $lines[] = "🏟 {$f->league_name}" . ($f->match_date ? ' | ' . $f->match_date->format('D, M d H:i') : '');
+
+        // Market odds
+        if ($o['home_odds'] > 0) {
+            $lines[] = "";
+            $lines[] = "**📊 Market Odds:**";
+            $lines[] = "Home {$o['home_odds']} | Draw {$o['draw_odds']} | Away {$o['away_odds']}";
+            if ($o['over25_odds'] > 0) $lines[] = "Over 2.5: {$o['over25_odds']} | BTTS Yes: {$o['bts_yes']}";
+        }
+
+        // Form analysis
         $hf = $s['home_form']; $af = $s['away_form'];
-        $p[] = "📈 **Form**: {$f->home_team} {$hf['form_string']} ({$hf['ppg']}ppg) | {$f->away_team} {$af['form_string']} ({$af['ppg']}ppg)";
-        if ($st['home_position'] > 0)
-            $p[] = "🏆 **Standings**: {$f->home_team} #{$st['home_position']} ({$st['home_points']}pts) | {$f->away_team} #{$st['away_position']} ({$st['away_points']}pts)";
-        $p[] = "🎯 **xG**: {$f->home_team} {$s['hxg']} – {$s['axg']} {$f->away_team} (Total: {$s['txg']})";
+        $lines[] = "";
+        $lines[] = "**📈 Recent Form:**";
+        $lines[] = "{$f->home_team}: {$hf['form_string']} ({$hf['ppg']} PPG — {$hf['wins']}W {$hf['draws']}D {$hf['losses']}L)";
+        $lines[] = "{$f->away_team}: {$af['form_string']} ({$af['ppg']} PPG — {$af['wins']}W {$af['draws']}D {$af['losses']}L)";
 
-        $best = $s['home_win_prob'] >= max($s['draw_prob'], $s['away_win_prob']) ? 'Home Win' : ($s['away_win_prob'] >= $s['draw_prob'] ? 'Away Win' : 'Draw');
-        $c = max($s['home_win_prob'], $s['draw_prob'], $s['away_win_prob']);
-        $p[] = "💡 **Pick**: {$best} ({$c}%)";
+        // H2H
+        if ($h2h['matches'] > 0) {
+            $lines[] = "";
+            $lines[] = "**🤝 Head-to-Head (Last {$h2h['matches']}):**";
+            $lines[] = "{$f->home_team} {$h2h['home_win_rate']}% | Draws {$h2h['draw_rate']}% | {$f->away_team} {$h2h['away_win_rate']}%";
+            $lines[] = "O2.5: {$h2h['over25_rate']}% | BTTS: {$h2h['bts_rate']}% | Avg Goals: {$h2h['avg_home_goals']}–{$h2h['avg_away_goals']}";
+        }
 
-        return implode("\n\n", $p);
+        // Standings
+        if ($st['home_position'] > 0 && $st['away_position'] > 0) {
+            $lines[] = "";
+            $lines[] = "**🏆 League Standings:**";
+            $lines[] = "{$f->home_team}: #{$st['home_position']} ({$st['home_points']}pts) | {$f->away_team}: #{$st['away_position']} ({$st['away_points']}pts)";
+        }
+
+        // xG Analysis
+        $lines[] = "";
+        $lines[] = "**🎯 Expected Goals (xG):**";
+        $lines[] = "{$f->home_team} {$s['hxg']} — {$s['axg']} {$f->away_team} (Total: {$s['txg']})";
+        $lines[] = "O1.5: {$s['o15_prob']}% | O2.5: {$s['o25_prob']}% | BTTS: {$s['bts_prob']}%";
+
+        // Injury news
+        if (!empty($injuries) && $injuries['has_injuries']) {
+            $lines[] = "";
+            $lines[] = "**🏥 Injury News:**";
+            if ($injuries['home_missing'] > 0) {
+                $lines[] = "{$f->home_team} ({$injuries['home_missing']} missing):";
+                foreach (array_slice($injuries['home_injuries'], 0, 4) as $inj) {
+                    $lines[] = "  • {$inj['name']} — {$inj['reason']} ({$inj['type']})";
+                }
+                if ($injuries['home_missing'] > 4) $lines[] = "  • ...and " . ($injuries['home_missing'] - 4) . " more";
+            }
+            if ($injuries['away_missing'] > 0) {
+                $lines[] = "{$f->away_team} ({$injuries['away_missing']} missing):";
+                foreach (array_slice($injuries['away_injuries'], 0, 4) as $inj) {
+                    $lines[] = "  • {$inj['name']} — {$inj['reason']} ({$inj['type']})";
+                }
+                if ($injuries['away_missing'] > 4) $lines[] = "  • ...and " . ($injuries['away_missing'] - 4) . " more";
+            }
+            // Show adjusted impact
+            $impactNote = [];
+            if ($injuries['home_missing'] >= 3) $impactNote[] = "{$f->home_team} significantly weakened";
+            if ($injuries['away_missing'] >= 3) $impactNote[] = "{$f->away_team} significantly weakened";
+            if (!empty($impactNote)) {
+                $lines[] = "⚠️ " . implode(' | ', $impactNote) . " — confidence adjusted accordingly.";
+            }
+        } else {
+            $lines[] = "";
+            $lines[] = "**🏥 Injury News:** ✅ Both teams near full strength.";
+        }
+
+        // Final verdict
+        $lines[] = "";
+        $lines[] = "**🏁 Verdict: {$confidenceEmoji} {$bestPick}**";
+        $lines[] = "Confidence: {$bestConf}% ({$confidenceLevel})";
+        $lines[] = "Second Option: " . array_key_first(array_slice(array_filter($probs, fn($v) => $v < $bestConf), 0, 1)) . " ({$secondConf}%)";
+        if ($bestConf > 88) {
+            $lines[] = "";
+            $lines[] = "**💡 Recommendation:** Elite confidence pick. Strongest possible signal across all data points.";
+        } elseif ($bestConf > 80) {
+            $lines[] = "";
+            $lines[] = "**💡 Recommendation:** High confidence. Strong value — multiple indicators align favorably.";
+        } elseif ($bestConf > 60) {
+            $lines[] = "";
+            $lines[] = "**💡 Recommendation:** Moderate confidence. Consider combining with other selections for accumulators.";
+        } else {
+            $lines[] = "";
+            $lines[] = "**💡 Recommendation:** Low confidence. Best avoided or treated as speculative.";
+        }
+
+        return implode("\n", $lines);
     }
 
     // ═══════════════════════════════════════════════

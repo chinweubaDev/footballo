@@ -154,6 +154,9 @@
                             <a href="{{ route('basketball') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
                                 <i class="fas fa-basketball-ball mr-2 text-orange-500"></i>Basketball
                             </a>
+                            <a href="{{ route('blog.index') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-slate-700 hover:text-primary-600 transition-colors duration-200">
+                                <i class="fas fa-newspaper mr-2 text-blue-500"></i>Blog
+                            </a>
                         </div>
                     </div>
 
@@ -275,6 +278,9 @@
                     <!-- <a href="{{ route('tips.vvip') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
                         <i class="fas fa-gem mr-3 text-purple-500"></i>VVIP Tips
                     </a> -->
+                    <a href="{{ route('blog.index') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-newspaper mr-3 text-blue-500"></i>Blog
+                    </a>
                     <a href="{{ route('pricing') }}" class="flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition-colors">
                         <i class="fas fa-tags mr-3 text-slate-400"></i>Pricing
                     </a>

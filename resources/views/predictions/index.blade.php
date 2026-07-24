@@ -19,32 +19,37 @@
                 </div>
                 
                 <!-- Filters -->
-                <div class="flex flex-wrap gap-4" data-aos="fade-left">
+                <form method="GET" action="{{ route('predictions') }}" class="flex flex-wrap gap-4" data-aos="fade-left">
                     <div class="relative min-w-[200px]">
-                        <select id="leagueFilter" class="w-full bg-slate-800 border-none text-white text-sm font-bold rounded-2xl px-6 py-4 focus:ring-2 focus:ring-primary-500 appearance-none transition-all cursor-pointer">
+                        <select name="league" onchange="this.form.submit()" class="w-full bg-slate-800 border-none text-white text-sm font-bold rounded-2xl px-6 py-4 focus:ring-2 focus:ring-primary-500 appearance-none transition-all cursor-pointer">
                             <option value="">All Leagues</option>
-                            <option value="Premier League">Premier League</option>
-                            <option value="La Liga">La Liga</option>
-                            <option value="Bundesliga">Bundesliga</option>
-                            <option value="Serie A">Serie A</option>
+                            @foreach($leagues as $league)
+                                <option value="{{ $league }}" {{ request('league') === $league ? 'selected' : '' }}>{{ $league }}</option>
+                            @endforeach
                         </select>
                         <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                             <i class="fas fa-chevron-down text-xs"></i>
                         </div>
                     </div>
                     <div class="relative min-w-[200px]">
-                        <select id="categoryFilter" class="w-full bg-slate-800 border-none text-white text-sm font-bold rounded-2xl px-6 py-4 focus:ring-2 focus:ring-primary-500 appearance-none transition-all cursor-pointer">
+                        <select name="category" onchange="this.form.submit()" class="w-full bg-slate-800 border-none text-white text-sm font-bold rounded-2xl px-6 py-4 focus:ring-2 focus:ring-primary-500 appearance-none transition-all cursor-pointer">
                             <option value="">All Categories</option>
-                            <option value="1X2">1X2</option>
-                            <option value="Over/Under">Over/Under</option>
-                            <option value="Both Teams to Score">BTS</option>
-                            <option value="Double Chance">Double Chance</option>
+                            <option value="1X2" {{ request('category') === '1X2' ? 'selected' : '' }}>1X2</option>
+                            <option value="Over/Under" {{ request('category') === 'Over/Under' ? 'selected' : '' }}>Over/Under</option>
+                            <option value="BTS" {{ request('category') === 'BTS' ? 'selected' : '' }}>Both Teams to Score</option>
+                            <option value="Double Chance" {{ request('category') === 'Double Chance' ? 'selected' : '' }}>Double Chance</option>
+                            <option value="Draw" {{ request('category') === 'Draw' ? 'selected' : '' }}>Draw</option>
                         </select>
                         <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                             <i class="fas fa-filter text-xs"></i>
                         </div>
                     </div>
-                </div>
+                    @if(request('league') || request('category'))
+                        <a href="{{ route('predictions') }}" class="inline-flex items-center px-4 py-2 bg-slate-700 text-white text-xs font-bold rounded-xl hover:bg-slate-600 transition-colors">
+                            <i class="fas fa-times mr-1.5"></i> Clear
+                        </a>
+                    @endif
+                </form>
             </div>
         </div>
     </section>
@@ -72,111 +77,63 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($fixtures as $fixture)
-                        @foreach($fixture->predictions as $prediction)
-                        <div class="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group flex flex-col h-full ring-1 ring-slate-100">
-                            <!-- Match Meta -->
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                                    <i class="far fa-clock mr-1.5 text-primary-500"></i>
-                                    {{ $fixture->match_date->format('H:i') }}
-                                </span>
-                                <span class="bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-slate-100">
-                                    {{ $prediction->category }}
-                                </span>
-                            </div>
-
-                            <!-- Teams -->
-                            <div class="space-y-4 mb-8">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center p-1 border border-slate-100">
+                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                    <table class="w-full text-left responsive-table">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100">
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Time</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Match</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Score</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tip</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Conf</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right pr-6">Odds</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            @foreach($fixtures as $fixture)
+                                @foreach($fixture->predictions as $prediction)
+                                <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location='{{ route('match.detail', $fixture->id) }}'">
+                                    <td class="px-6 py-4" data-label="Time">
+                                        <span class="font-bold text-slate-900">{{ $fixture->match_date->format('H:i') }}</span>
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">{{ $prediction->category }}</span>
+                                    </td>
+                                    <td class="px-6 py-4" data-label="Match">
+                                        <div class="flex items-center gap-2">
                                             @if($fixture->home_team_logo)
-                                                <img src="{{ $fixture->home_team_logo }}" class="w-full h-full object-contain">
-                                            @else
-                                                <i class="fas fa-shield-alt text-slate-300"></i>
+                                                <img src="{{ $fixture->home_team_logo }}" class="w-5 h-5 object-contain">
                                             @endif
-                                        </div>
-                                        <span class="text-sm font-bold text-slate-800">{{ $fixture->home_team }}</span>
-                                    </div>
-                                    <span class="text-xs font-black text-slate-300">HOME</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center p-1 border border-slate-100">
+                                            <span class="text-sm font-bold text-slate-800">{{ $fixture->home_team }}</span>
+                                            <span class="text-[10px] text-slate-300">vs</span>
+                                            <span class="text-sm font-bold text-slate-800">{{ $fixture->away_team }}</span>
                                             @if($fixture->away_team_logo)
-                                                <img src="{{ $fixture->away_team_logo }}" class="w-full h-full object-contain">
-                                            @else
-                                                <i class="fas fa-shield-alt text-slate-300"></i>
+                                                <img src="{{ $fixture->away_team_logo }}" class="w-5 h-5 object-contain">
                                             @endif
                                         </div>
-                                        <span class="text-sm font-bold text-slate-800">{{ $fixture->away_team }}</span>
-                                    </div>
-                                    <span class="text-xs font-black text-slate-300">AWAY</span>
-                                </div>
-                            </div>
-
-                            <!-- Odds Display & Tip -->
-                            <div class="mt-auto">
-                                <div class="bg-slate-50 rounded-2xl p-4 mb-4 ring-1 ring-slate-100">
-                                    <div class="flex justify-between items-center mb-3">
-                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recommended Tip</span>
-                                        <span class="font-black text-primary-600 text-lg">{{ $prediction->tip }}</span>
-                                    </div>
-                                    
-                                    <!-- Simple Odds Strip -->
-                                    <div class="grid grid-cols-3 gap-2 text-center border-t border-slate-200/50 pt-3">
-                                        <div>
-                                            <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">1</div>
-                                            <div class="text-xs font-bold text-slate-900">{{ $prediction->odds ?? '2.10' }}</div>
-                                        </div>
-                                        <div class="border-x border-slate-200/50">
-                                            <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">X</div>
-                                            <div class="text-xs font-bold text-slate-900">{{ number_format(($prediction->odds ?? 2.10) * 0.8, 2) }}</div>
-                                        </div>
-                                        <div>
-                                            <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">2</div>
-                                            <div class="text-xs font-bold text-slate-900">{{ number_format(($prediction->odds ?? 2.10) * 1.2, 2) }}</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Confidence Bar -->
-                                <div class="mb-6">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Confidence</span>
-                                        <span class="text-xs font-black text-slate-900">{{ $prediction->confidence }}%</span>
-                                    </div>
-                                    <div class="w-full bg-slate-100 rounded-full h-1.5 p-0.5 shadow-inner">
-                                        <div class="bg-gradient-to-r from-primary-400 to-primary-600 h-0.5 rounded-full transition-all duration-500 shadow-sm" style="width: {{ $prediction->confidence }}%"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Analysis (Truncated) -->
-                                @if($prediction->analysis)
-                                <p class="text-[11px] text-slate-500 italic mb-6 line-clamp-2 px-2 border-l-2 border-primary-500/20">
-                                    "{{ $prediction->analysis }}"
-                                </p>
-                                @endif
-
-                                <!-- Footer Badges -->
-                                <div class="flex flex-wrap gap-2 pt-4 border-t border-slate-100">
-                                    @if($prediction->is_premium)
-                                        <span class="inline-flex items-center px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-yellow-100 text-yellow-800">
-                                            <i class="fas fa-crown mr-1"></i>Premium
-                                        </span>
-                                    @endif
-                                    @if($prediction->is_maxodds)
-                                        <span class="inline-flex items-center px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-purple-100 text-purple-800">
-                                            <i class="fas fa-star mr-1"></i>Maxodds
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    @endforeach
+                                    </td>
+                                    <td class="px-6 py-4 text-center" data-label="Score">
+                                        @if(in_array($fixture->status, ['FT','AET','PEN']))
+                                            @php $scoreWon = $prediction->status === 'won'; @endphp
+                                            <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                        @elseif(in_array($fixture->status, ['LIVE','1H','2H','HT','ET','BT']))
+                                            <span class="font-black bg-red-100 text-red-700 px-2 py-1 rounded-lg">{{ $fixture->home_goals ?? 0 }} – {{ $fixture->away_goals ?? 0 }}</span>
+                                        @else
+                                            <span class="text-slate-300 font-bold">––</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4" data-label="Tip">
+                                        <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-xl text-sm font-bold">{{ $prediction->tip }}</span>
+                                    </td>
+                                    <td class="px-6 py-4" data-label="Conf">
+                                        <span class="font-bold text-primary-600">{{ $prediction->confidence }}%</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right pr-6" data-label="Odds">
+                                        <span class="font-black text-slate-900">{{ $prediction->odds ?? '-' }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
             @endforeach

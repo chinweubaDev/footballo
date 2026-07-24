@@ -110,8 +110,9 @@
                             </div>
                             <div class="mt-3">
                                 @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
-                                    <span class="text-3xl font-black text-yellow-400 bg-white/10 px-4 py-1.5 rounded-xl">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
-                                    <span class="block text-[10px] text-green-400 font-bold mt-1">FULL TIME</span>
+                                    @php $scoreWon = $prediction->status === 'won'; @endphp
+                                    <span class="text-3xl font-black px-4 py-1.5 rounded-xl {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
+                                    <span class="block text-[10px] font-bold mt-1 {{ $scoreWon ? 'text-green-400' : 'text-slate-500' }}">{{ $scoreWon ? '✅ WON' : '❌ LOST' }} · FULL TIME</span>
                                 @elseif(in_array($fixture->status, ['LIVE','1H','HT','2H']))
                                     <span class="text-3xl font-black text-red-400 bg-white/10 px-4 py-1.5 rounded-xl animate-pulse">{{ $fixture->home_goals ?? 0 }} – {{ $fixture->away_goals ?? 0 }}</span>
                                     <span class="block text-[10px] text-red-400 font-bold mt-1">LIVE</span>
