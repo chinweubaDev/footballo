@@ -20,7 +20,10 @@ class BlogController extends Controller
             });
         }
 
-        $posts = $query->orderBy('published_at', 'desc')->paginate(12);
+        // Soccer first, then basketball, hockey, tennis
+        $posts = $query->orderByRaw("FIELD(category, 'soccer', 'basketball', 'hockey', 'tennis')")
+            ->orderBy('published_at', 'desc')
+            ->paginate(12);
 
         $categories = [
             'soccer' => BlogPost::published()->byCategory('soccer')->count(),

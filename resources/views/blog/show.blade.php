@@ -51,11 +51,20 @@
                         <li class="text-slate-300 ml-4 list-disc">{{ $m[1] }}</li>
                     @elseif(preg_match('/^---/', $trimmed))
                         <hr class="border-white/10 my-8">
+                    @elseif(str_contains($trimmed, '<a href'))
+                        <p class="text-slate-300">{!! $trimmed !!}</p>
                     @else
                         <p>{{ $trimmed }}</p>
                     @endif
                 @endif
             @endforeach
+            @if($post->source_url)
+            <div class="mt-8 pt-6 border-t border-white/10 text-center">
+                <a href="{{ $post->source_url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-primary-600 hover:text-white transition-all text-sm font-bold">
+                    <i class="fas fa-external-link-alt"></i> Read full article at {{ $post->source_name ?: 'source' }}
+                </a>
+            </div>
+            @endif
         </div>
 
         {{-- Tags --}}
