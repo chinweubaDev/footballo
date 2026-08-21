@@ -3,10 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Fixture;
+use App\Models\League;
 use App\Models\Prediction;
 use App\Services\ApiFootballServiceEnhanced;
-use App\Services\PredictionEngine;
-use App\Services\TipCategorizer;
+use App\Services\Prediction\PredictionEngine;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
@@ -19,9 +19,9 @@ class GeneratePredictions extends Command
                             {--force : Force regenerate existing predictions}
                             {--all : Include ALL leagues (default: top leagues only)}';
 
-    protected $description = 'Fetch fixtures and generate AI-powered predictions for all markets';
+    protected $description = 'Fetch fixtures and generate statistical predictions for all enabled markets';
 
-    // Top leagues — includes summer-active leagues for year-round coverage
+    // @deprecated Legacy league id list. The engine now reads enabled leagues from the database.
     protected array $topLeagueIds = [
         // UEFA Competitions
         2, 3, 848,     
@@ -91,7 +91,17 @@ class GeneratePredictions extends Command
 
         $api = app(ApiFootballServiceEnhanced::class);
         $engine = app(PredictionEngine::class);
-        $categorizer = app(TipCategorizer::class);
+
+        $enabledLeagueIds = League::query()
+            ->where('enabled', true)
+            ->where('prediction_enabled', true)
+            ->pluck('api_football_league_id')
+            ->all();
+
+        if (empty($enabledLeagueIds)) {
+            $this->warn('No enabled prediction leagues found. Enable a league first.');
+            return 1;
+        }
 
         // Check remaining API requests (skip warning if --no-interaction)
         $remaining = $api->getRemainingRequests();
@@ -107,8 +117,9 @@ class GeneratePredictions extends Command
             $currentDate = $date->copy()->addDays($d);
             $this->info("\n📅 Processing: {$currentDate->toDateString()}");
 
-            // Fetch fixtures from API
-            $fixturesData = $api->getFixturesByDate($currentDate->toDateString(), $leagueId);
+            // Fetch fixtures from API (league-filtered requests also need the season).
+            $season = $leagueId ? $this->seasonForDate($currentDate) : null;
+            $fixturesData = $api->getFixturesByDate($currentDate->toDateString(), $leagueId, $season);
 
             if (!$fixturesData || empty($fixturesData['response'])) {
                 $this->warn("No fixtures found for {$currentDate->toDateString()}");
@@ -117,32 +128,19 @@ class GeneratePredictions extends Command
 
             $fixtures = $fixturesData['response'];
             
-            // Filter to top leagues only (unless --all or --league specified)
-            if (!$leagueId && !$this->option('all')) {
-                $fixtures = array_filter($fixtures, function ($f) {
-                    $leagueId = $f['league']['id'] ?? 0;
-                    $status = $f['fixture']['status']['short'] ?? 'NS';
-                    // Only predict NOT-STARTED matches from top leagues
-                    return $status === 'NS' && in_array($leagueId, $this->topLeagueIds);
-                });
-                $fixtures = array_values($fixtures);
-            } else {
-                // Even with --all or --league, skip already played matches
-                $fixtures = array_filter($fixtures, function ($f) {
-                    $status = $f['fixture']['status']['short'] ?? 'NS';
-                    return in_array($status, ['NS', 'TBD', 'PST', 'CANC']);
-                });
-                $fixtures = array_values($fixtures);
-            }
+            // Keep only not-started fixtures from enabled leagues
+            $fixtures = array_values(array_filter($fixtures, function ($f) use ($enabledLeagueIds) {
+                $status = $f['fixture']['status']['short'] ?? 'NS';
+                $league = $f['league']['id'] ?? 0;
+
+                return in_array($status, ['NS', 'TBD', 'PST'], true) && in_array($league, $enabledLeagueIds, true);
+            }));
             
             $count = count($fixtures);
-            $this->info("Found {$count} fixtures" . (!$leagueId && !$this->option('all') ? ' (top leagues only)' : ''));
+            $this->info("Found {$count} fixture(s)");
 
             $bar = $this->output->createProgressBar($count);
             $bar->start();
-
-            $dayFixtures = [];
-            $precomputedPredictions = []; // Store predictions to pass to categorizer
 
             foreach ($fixtures as $fixtureData) {
                 try {
@@ -151,10 +149,7 @@ class GeneratePredictions extends Command
 
                     // Generate prediction for this fixture
                     if ($fixture && $fixture->home_team_id && $fixture->away_team_id) {
-                        $predictionData = $engine->predictFixture($fixture);
-                        $this->savePredictions($fixture, $predictionData, $force);
-                        $dayFixtures[] = $fixture;
-                        $precomputedPredictions[$fixture->id] = $predictionData;
+                        $engine->generate($fixture);
                         $totalGenerated++;
                     }
 
@@ -168,13 +163,9 @@ class GeneratePredictions extends Command
             $bar->finish();
             $this->newLine();
 
-            // Categorize all fixtures for this day (pass precomputed predictions)
-            if (count($dayFixtures) > 0) {
-                $this->info('📊 Categorizing tips...');
-                $categories = $categorizer->categorizeFixtures(collect($dayFixtures), $precomputedPredictions);
-                $this->applyCategories($categories);
-            }
         }
+
+        $this->flagFixtures();
 
         $this->newLine();
         $this->info("✅ Prediction generation complete!");
@@ -182,6 +173,16 @@ class GeneratePredictions extends Command
         $this->info("API requests remaining: {$api->getRemainingRequests()}");
 
         return 0;
+    }
+
+    /**
+     * API-Football season for a given date (European Aug–May convention):
+     * July onwards is the new season (e.g. 2026-08 -> 2026),
+     * January–June belongs to the previous season (e.g. 2026-03 -> 2025).
+     */
+    protected function seasonForDate(Carbon $date): int
+    {
+        return $date->month >= 7 ? $date->year : $date->year - 1;
     }
 
     protected function saveFixture(array $data, bool $force): ?Fixture
@@ -398,5 +399,71 @@ class GeneratePredictions extends Command
             '2' => round(2.0 + mt_rand(0, 200) / 100, 2),
             default => round(1.8 + mt_rand(0, 100) / 100, 2),
         };
+    }
+
+    /**
+     * Update fixture homepage/category flags from published predictions so the
+     * existing homepage and market pages keep working (Phase 1B compat).
+     */
+    protected function flagFixtures(): void
+    {
+        $todayDate = now()->toDateString();
+
+        Fixture::whereDate('match_date', $todayDate)->update([
+            'today_tip' => false,
+            'featured' => false,
+            'is_surepick' => false,
+            'is_vip' => false,
+            'is_vvip' => false,
+            'maxodds_tip' => false,
+            'over15' => false,
+            'over25' => false,
+            'bts' => false,
+            'draw' => false,
+            'double_chance' => false,
+        ]);
+
+        // Homepage sections: rank published 1X2 selections by confidence.
+        $published = Prediction::query()
+            ->where('market_code', '1x2')
+            ->where('status', 'published')
+            ->whereHas('fixture', fn ($q) => $q->whereDate('match_date', $todayDate))
+            ->orderByDesc('confidence')
+            ->pluck('fixture_id');
+
+        foreach ($published as $index => $fixtureId) {
+            if ($index < 5) {
+                Fixture::where('id', $fixtureId)->update(['today_tip' => true]);
+            } elseif ($index < 9) {
+                Fixture::where('id', $fixtureId)->update(['is_surepick' => true]);
+            } elseif ($index < 24) {
+                Fixture::where('id', $fixtureId)->update(['featured' => true]);
+            }
+        }
+
+        // Market pages: flag fixtures whose market is published.
+        $categoryFlags = [
+            'over_1_5' => ['over15', 8],
+            'over_2_5' => ['over25', 8],
+            'btts' => ['bts', 6],
+            'draw' => ['draw', 5],
+            'double_chance' => ['double_chance', 6],
+        ];
+
+        foreach ($categoryFlags as $marketCode => [$flag, $limit]) {
+            $ids = Prediction::query()
+                ->where('market_code', $marketCode)
+                ->where('status', 'published')
+                ->whereHas('fixture', fn ($q) => $q->whereDate('match_date', $todayDate))
+                ->orderByDesc('confidence')
+                ->limit($limit)
+                ->pluck('fixture_id');
+
+            foreach ($ids as $fixtureId) {
+                Fixture::where('id', $fixtureId)->update([$flag => true]);
+            }
+        }
+
+        $this->info('✅ Homepage & category flags updated.');
     }
 }

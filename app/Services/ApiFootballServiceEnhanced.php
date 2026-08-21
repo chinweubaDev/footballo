@@ -46,11 +46,21 @@ class ApiFootballServiceEnhanced
 
     // ═══ FIXTURES ═══════════════════════════════════════
 
-    public function getFixturesByDate(string $date, ?int $league = null): ?array
+    public function getFixturesByDate(string $date, ?int $league = null, ?int $season = null): ?array
     {
         $p = ['date' => $date];
         if ($league) $p['league'] = $league;
+        // API-Football requires `season` when filtering fixtures by `league`.
+        if ($season) $p['season'] = $season;
         return $this->request('/fixtures', $p);
+    }
+
+    /**
+     * Fetch all fixtures for a league+season (used for historical backfill).
+     */
+    public function getFixturesByLeagueSeason(int $league, int $season): ?array
+    {
+        return $this->request('/fixtures', ['league' => $league, 'season' => $season]);
     }
 
     /** Get one fixture by ID */

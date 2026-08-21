@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Fixture;
-use App\Models\Prediction;
 use App\Services\ApiFootballServiceEnhanced;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -165,40 +164,19 @@ class UpdateLiveScores extends Command
 
     protected function evaluatePredictions(Fixture $fixture): void
     {
-        $predictions = Prediction::where('fixture_id', $fixture->id)
-            ->where('status', 'pending')
-            ->get();
+        // Structured, multi-market resolution (Phase 1E). Replaces the legacy
+        // string-matching evaluation; resolves WON/LOST/VOID for every market.
+        $resolver = app(\App\Services\Prediction\Evaluation\PredictionResultService::class);
+        $resolver->resolveFixturePredictions($fixture);
 
-        $homeGoals = $fixture->home_goals;
-        $awayGoals = $fixture->away_goals;
+        // Refresh performance caches now that results changed.
+        app(\App\Services\Prediction\Evaluation\PerformanceAnalyticsService::class)->flush();
 
-        foreach ($predictions as $prediction) {
-            $result = 'lost';
-
-            // Evaluate 1X2
-            if (str_contains($prediction->tip, 'Home Win') && $homeGoals > $awayGoals) {
-                $result = 'won';
-            } elseif (str_contains($prediction->tip, 'Away Win') && $awayGoals > $homeGoals) {
-                $result = 'won';
-            } elseif (str_contains($prediction->tip, 'Draw') && $homeGoals == $awayGoals) {
-                $result = 'won';
-            }
-
-            // For other categories, check the tip content
-            if (str_contains($prediction->bts_tip_content, 'BTS: Yes') && $homeGoals > 0 && $awayGoals > 0) {
-                // BTS won (this is a partial evaluation - full multi-market TBD)
-            }
-
-            $prediction->update([
-                'status' => $result,
-            ]);
-        }
-
-        // Update the Result model for tracking
-        $this->updateResultsTracking($fixture->id, $predictions);
+        // Update the legacy Result model for VIP/VVIP tracking.
+        $this->updateResultsTracking($fixture->id);
     }
 
-    protected function updateResultsTracking(int $fixtureId, $predictions): void
+    protected function updateResultsTracking(int $fixtureId): void
     {
         // This would connect to your existing Result model
         // to track VIP/VVIP performance

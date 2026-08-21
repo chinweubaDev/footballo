@@ -36,8 +36,8 @@ return [
     ],
 
     'api_football' => [
-        'key' => env('API_FOOTBALL_KEY'),
-        'base_url' => 'https://v3.football.api-sports.io',
+        'key' => env('FOOTBALL_API_KEY', env('API_FOOTBALL_KEY')),
+        'base_url' => env('FOOTBALL_API_BASE_URL', 'https://v3.football.api-sports.io'),
     ],
 
     'flutterwave' => [

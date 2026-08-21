@@ -19,5 +19,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $this->call([
+            \Database\Seeders\LeagueSeeder::class,
+            \Database\Seeders\PredictionCategorySeeder::class,
+            \Database\Seeders\PredictionModelSeeder::class,
+        ]);
     }
 }

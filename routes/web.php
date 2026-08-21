@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\PredictionAdminController;
+use App\Http\Controllers\Admin\PredictionLeagueController;
+use App\Http\Controllers\Admin\PredictionMarketController;
+use App\Http\Controllers\Admin\PredictionPerformanceController;
+use App\Http\Controllers\Admin\PredictionModelController;
+use App\Http\Controllers\Admin\BacktestController;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/live-scores', [App\Http\Controllers\HomeController::class, 'liveScores'])->name('live-scores');
@@ -29,6 +35,9 @@ Route::get('/predictions/double-chance', [App\Http\Controllers\PredictionControl
 Route::get('/predictions/bts', [App\Http\Controllers\PredictionController::class, 'bts'])->name('predictions.bts');
 Route::get('/predictions/draw', [App\Http\Controllers\PredictionController::class, 'draw'])->name('predictions.draw');
 Route::get('/predictions/tomorrow', [App\Http\Controllers\PredictionController::class, 'tomorrow'])->name('predictions.tomorrow');
+Route::get('/predictions/correct-score', [App\Http\Controllers\PredictionController::class, 'correctScore'])->name('predictions.correct-score');
+Route::get('/predictions/{league:slug}', [App\Http\Controllers\PredictionController::class, 'league'])->name('predictions.league');
+Route::get('/predictions/{league:slug}/{fixture:slug}', [App\Http\Controllers\PredictionController::class, 'fixture'])->name('predictions.fixture');
 
 // Tips
 Route::get('/tips/vip', [App\Http\Controllers\TipsController::class, 'vip'])->name('tips.vip');
@@ -73,7 +82,7 @@ Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])
 Route::get('/sitemap.xml', [App\Http\Controllers\HomeController::class, 'sitemap'])->name('sitemap');
 
 // Admin routes
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // Fixtures
@@ -86,10 +95,50 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/fixtures/{fixture}', [AdminController::class, 'updateFixture'])->name('fixtures.update');
     Route::delete('/fixtures/{fixture}', [AdminController::class, 'deleteFixture'])->name('fixtures.delete');
 
-    // Predictions
-    Route::get('/predictions', [AdminController::class, 'predictions'])->name('predictions');
-    Route::get('/predictions/create', [AdminController::class, 'createPrediction'])->name('predictions.create');
-    Route::post('/predictions', [AdminController::class, 'storePrediction'])->name('predictions.store');
+    // Prediction Control Center
+    Route::get('/predictions', [PredictionAdminController::class, 'dashboard'])->name('predictions');
+    Route::get('/predictions/list', [PredictionAdminController::class, 'index'])->name('predictions.list');
+    Route::get('/predictions/leagues', [PredictionLeagueController::class, 'index'])->name('predictions.leagues');
+    Route::post('/predictions/leagues/{league}/toggle', [PredictionLeagueController::class, 'toggleEnabled'])->name('predictions.leagues.toggle');
+    Route::post('/predictions/leagues/{league}/settings', [PredictionLeagueController::class, 'updateSettings'])->name('predictions.leagues.settings');
+    Route::get('/predictions/markets', [PredictionMarketController::class, 'index'])->name('predictions.markets');
+    Route::post('/predictions/markets/{category}/toggle', [PredictionMarketController::class, 'toggleEnabled'])->name('predictions.markets.toggle');
+    Route::post('/predictions/markets/{category}/settings', [PredictionMarketController::class, 'updateSettings'])->name('predictions.markets.settings');
+
+    // Model performance dashboard
+    Route::get('/predictions/performance', [PredictionPerformanceController::class, 'index'])->name('predictions.performance');
+
+    // Model versions & comparison
+    Route::get('/predictions/models', [PredictionModelController::class, 'index'])->name('predictions.models');
+    Route::get('/predictions/models/compare', [PredictionModelController::class, 'compare'])->name('predictions.models.compare');
+    Route::get('/predictions/models/data-quality', [PredictionModelController::class, 'dataQuality'])->name('predictions.models.data-quality');
+    Route::post('/predictions/models/{model}/approve', [PredictionModelController::class, 'approve'])->name('predictions.models.approve');
+    Route::post('/predictions/models/{model}/reject', [PredictionModelController::class, 'reject'])->name('predictions.models.reject');
+    Route::post('/predictions/models/{model}/activate', [PredictionModelController::class, 'activate'])->name('predictions.models.activate');
+    Route::post('/predictions/models/{model}/retire', [PredictionModelController::class, 'retire'])->name('predictions.models.retire');
+
+    // Shadow mode & multi-league validation
+    Route::get('/predictions/shadow', [PredictionModelController::class, 'shadow'])->name('predictions.shadow');
+    Route::get('/predictions/validation', [PredictionModelController::class, 'validation'])->name('predictions.validation');
+
+    // Historical backtesting
+    Route::get('/predictions/backtesting', [BacktestController::class, 'index'])->name('predictions.backtesting.index');
+    Route::get('/predictions/backtesting/create', [BacktestController::class, 'create'])->name('predictions.backtesting.create');
+    Route::post('/predictions/backtesting', [BacktestController::class, 'store'])->name('predictions.backtesting.store');
+    Route::get('/predictions/backtesting/{backtest}', [BacktestController::class, 'show'])->name('predictions.backtesting.show');
+    Route::post('/predictions/backtesting/{backtest}/cancel', [BacktestController::class, 'cancel'])->name('predictions.backtesting.cancel');
+    Route::post('/predictions/backtesting/{backtest}/archive', [BacktestController::class, 'archive'])->name('predictions.backtesting.archive');
+    Route::get('/predictions/backtesting/{backtest}/export', [BacktestController::class, 'export'])->name('predictions.backtesting.export');
+
+    Route::get('/predictions/{prediction}', [PredictionAdminController::class, 'show'])->name('predictions.show');
+    Route::post('/predictions/{prediction}/override', [PredictionAdminController::class, 'override'])->name('predictions.override');
+    Route::post('/predictions/{prediction}/revert', [PredictionAdminController::class, 'revert'])->name('predictions.revert');
+    Route::post('/predictions/{prediction}/lock', [PredictionAdminController::class, 'lock'])->name('predictions.lock');
+    Route::post('/predictions/{prediction}/unlock', [PredictionAdminController::class, 'unlock'])->name('predictions.unlock');
+    Route::post('/predictions/{prediction}/publish', [PredictionAdminController::class, 'publish'])->name('predictions.publish');
+    Route::post('/predictions/{prediction}/unpublish', [PredictionAdminController::class, 'unpublish'])->name('predictions.unpublish');
+    Route::post('/predictions/{prediction}/feature', [PredictionAdminController::class, 'feature'])->name('predictions.feature');
+    Route::post('/predictions/{prediction}/unfeature', [PredictionAdminController::class, 'unfeature'])->name('predictions.unfeature');
 
     // Users
     Route::get('/users', [AdminController::class, 'users'])->name('users');

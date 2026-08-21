@@ -9,6 +9,11 @@ Schedule::command('predictions:generate --days=3')->dailyAt('06:00');
 // Update live scores every 5 minutes during match hours
 Schedule::command('scores:update-live')->everyFiveMinutes()->between('12:00', '23:59');
 
+// Resolve predictions for finished matches (idempotent) and refresh caches.
+// Runs after matches typically finish and again overnight for catch-up.
+Schedule::command('predictions:resolve-results')->everyFiveMinutes()->between('18:00', '23:59');
+Schedule::command('predictions:resolve-results')->dailyAt('02:30');
+
 // Generate basketball predictions daily at 7 AM
 Schedule::command('predictions:basketball')->dailyAt('07:00');
 

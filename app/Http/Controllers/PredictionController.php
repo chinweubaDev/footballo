@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Prediction;
 use App\Models\Fixture;
+use App\Models\League;
+use App\Models\Prediction;
+use App\Models\PredictionCategory;
+use App\Services\Prediction\PublicPredictionService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PredictionController extends Controller
 {
+    public function __construct(protected PublicPredictionService $public)
+    {
+    }
+
     public function index(Request $request)
     {
         $query = Fixture::with('predictions')
@@ -115,67 +123,32 @@ class PredictionController extends Controller
 
     public function over15()
     {
-        $fixtures = Fixture::with('predictions')
-            ->where('over15', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
-
-        $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
-
-        return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Over 1.5');
+        return $this->market('over_1_5');
     }
 
     public function over25()
     {
-        $fixtures = Fixture::with('predictions')
-            ->where('over25', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
-
-        $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
-
-        return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Over 2.5');
+        return $this->market('over_2_5');
     }
 
     public function doubleChance()
     {
-        $fixtures = Fixture::with('predictions')
-            ->where('double_chance', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
-
-        $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
-
-        return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Double Chance');
+        return $this->market('double_chance');
     }
 
     public function bts()
     {
-        $fixtures = Fixture::with('predictions')
-            ->where('bts', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
-
-        $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
-
-        return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Both Teams to Score');
+        return $this->market('btts');
     }
 
     public function draw()
     {
-        $fixtures = Fixture::with('predictions')
-            ->where('draw', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->paginate(20);
+        return $this->market('draw');
+    }
 
-        $fixturesByLeague = $fixtures->getCollection()->groupBy('league_name');
-
-        return view('predictions.category', compact('fixturesByLeague', 'fixtures'))->with('category', 'Draw');
+    public function correctScore()
+    {
+        return $this->market('correct_score');
     }
 
     public function tomorrow()
@@ -188,6 +161,69 @@ class PredictionController extends Controller
         $fixturesByLeague = $fixtures->groupBy('league_name');
 
         return view('predictions.tomorrow', compact('fixturesByLeague', 'fixtures'));
+    }
+
+    public function league(string $slug, Request $request)
+    {
+        $league = League::where('slug', $slug)->first();
+
+        if (! $league) {
+            abort(404);
+        }
+
+        $markets = PredictionCategory::where('enabled', true)->orderBy('sort_order')->get();
+
+        $marketCode = $request->query('market');
+        if ($marketCode && ! in_array($marketCode, $markets->pluck('code')->all(), true)) {
+            $marketCode = null;
+        }
+
+        $dateRange = $request->query('date', 'all');
+        if (! in_array($dateRange, ['all', 'today', 'tomorrow', '3days', '7days'], true)) {
+            $dateRange = 'all';
+        }
+
+        $fixtures = $league->enabled
+            ? $this->public->getLeaguePredictions($league, $marketCode, $dateRange === 'all' ? null : $dateRange, 20)
+            : new LengthAwarePaginator([], 0, 20);
+
+        return view('predictions.league', compact('league', 'fixtures', 'markets', 'marketCode', 'dateRange'));
+    }
+
+    public function fixture(string $leagueSlug, string $fixtureSlug)
+    {
+        $league = League::where('slug', $leagueSlug)->first();
+
+        if (! $league) {
+            abort(404);
+        }
+
+        $fixture = Fixture::where('slug', $fixtureSlug)
+            ->where('league_id', $league->api_football_league_id)
+            ->first();
+
+        if (! $fixture) {
+            abort(404);
+        }
+
+        $fixture = $this->public->getFixturePredictions($fixture);
+
+        return view('predictions.fixture', compact('league', 'fixture'));
+    }
+
+    public function market(string $code)
+    {
+        $category = PredictionCategory::where('code', $code)->first();
+
+        if (! $category) {
+            abort(404);
+        }
+
+        $fixtures = $category->enabled
+            ? $this->public->getMarketPredictions($code, 20)
+            : new LengthAwarePaginator([], 0, 20);
+
+        return view('predictions.market', compact('category', 'fixtures'));
     }
 
     /**

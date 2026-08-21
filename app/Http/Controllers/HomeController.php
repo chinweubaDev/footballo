@@ -7,17 +7,20 @@ use App\Models\Fixture;
 use App\Models\Result;
 use App\Services\PredictionEngine;
 use App\Services\ApiFootballServiceEnhanced;
+use App\Services\Prediction\HomepagePredictionService;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     protected PredictionEngine $predictionEngine;
     protected ApiFootballServiceEnhanced $api;
+    protected HomepagePredictionService $homepage;
 
-    public function __construct(PredictionEngine $predictionEngine, ApiFootballServiceEnhanced $api)
+    public function __construct(PredictionEngine $predictionEngine, ApiFootballServiceEnhanced $api, HomepagePredictionService $homepage)
     {
         $this->predictionEngine = $predictionEngine;
         $this->api = $api;
+        $this->homepage = $homepage;
     }
 
     public function index()
@@ -50,25 +53,10 @@ class HomeController extends Controller
             }
         }
 
-        $featuredPredictions = Fixture::with('predictions')
-            ->featured()
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->limit(15)
-            ->get();
-
-        // Fallback: use any fixtures for today (prefer finished/live so scores display)
-        if ($featuredPredictions->isEmpty()) {
-            $featuredPredictions = Fixture::with('predictions')
-                ->whereDate('match_date', today())
-                ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
-                ->orderBy('match_date')
-                ->limit(15)
-                ->get();
-        }
+        $featuredSelections = $this->homepage->featuredSelections(6);
 
         $todayTipsByLeague = $todayTips->groupBy('league_name');
-        $featuredByLeague = $featuredPredictions->groupBy('league_name');
+        $featuredByLeague = $featuredSelections->groupBy(fn ($p) => $p->league?->name ?? 'Predictions');
 
         // Get VIP and VVIP results
         $vipResults = Result::where('type', 'vip')
@@ -81,33 +69,8 @@ class HomeController extends Controller
             ->limit(10)
             ->get();
 
-        // Get Sure Picks — fall back to best fixtures if none flagged
-        $surePicksTips = Fixture::with('predictions')
-            ->where('is_surepick', true)
-            ->whereDate('match_date', today())
-            ->orderBy('match_date')
-            ->limit(4)
-            ->get();
-
-        if ($surePicksTips->isEmpty()) {
-            $surePicksTips = Fixture::with('predictions')
-                ->whereDate('match_date', today())
-                ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
-                ->orderBy('match_date')
-                ->limit(4)
-                ->get();
-        }
-
-        // Enrich sure picks
-        foreach ($surePicksTips as $tip) {
-            if ($tip->home_team_id && $tip->away_team_id) {
-                try {
-                    $tip->prediction_data = $this->predictionEngine->predictFixture($tip);
-                } catch (\Exception $e) {
-                    $tip->prediction_data = null;
-                }
-            }
-        }
+        // Sure Picks — strictly 1X2 published predictions (enforced server-side).
+        $surePicks = $this->homepage->surePicks(6);
 
         // Get basketball tips
         $basketballTips = Fixture::with('predictions')
@@ -134,7 +97,7 @@ class HomeController extends Controller
 
         return view('home', compact(
             'todayTipsByLeague', 'featuredByLeague',
-            'vipResults', 'vvipResults', 'surePicksTips',
+            'vipResults', 'vvipResults', 'surePicks',
             'basketballTips', 'liveFixtures', 'blogPosts'
         ));
     }

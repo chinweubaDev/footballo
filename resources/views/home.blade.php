@@ -309,13 +309,13 @@
                             <th class="px-6 py-4 text-[10px] font-black text-green-700 uppercase tracking-widest text-center">Score</th>
                             <th class="px-6 py-4 text-[10px] font-black text-green-700 uppercase tracking-widest">Tip</th>
                             <th class="px-6 py-4 text-[10px] font-black text-green-700 uppercase tracking-widest text-center">Confidence</th>
-                            <th class="px-6 py-4 text-[10px] font-black text-green-700 uppercase tracking-widest text-right pr-6">Odds</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-green-700 uppercase tracking-widest text-right pr-6">Probability</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @forelse($surePicksTips as $tip)
-                        @php $pred = $tip->predictions->first(); @endphp
-                        <tr class="hover:bg-green-50/30 transition-colors cursor-pointer" onclick="window.location='{{ route('match.detail', $tip->id) }}'">
+                        @forelse($surePicks as $prediction)
+                        @php $tip = $prediction->fixture; @endphp
+                        <tr class="hover:bg-green-50/30 transition-colors cursor-pointer" onclick="window.location='{{ $tip && $tip->slug ? route('predictions.fixture', ['league' => $prediction->league?->slug ?? 'predictions', 'fixture' => $tip->slug]) : route('predictions') }}'">
                             <td class="px-6 py-4" data-label="Time">
                                 <span class="font-bold text-slate-900">{{ $tip->match_date->format('H:i') }}</span>
                             </td>
@@ -339,21 +339,21 @@
                             <td class="px-6 py-4" data-label="Tip">
                                 <span class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 font-extrabold text-sm shadow-sm group-hover:border-primary-500 group-hover:text-primary-600 transition-colors">
                                                 
-                                    {{ $pred->tip ?? '—' }}
+                                    {{ $prediction->effective_selection }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center" data-label="Confidence">
-                                                <span class="font-bold text-green-600" style="color:#000 !important">{{ $pred->confidence ?? '-' }}%</span>
+                                                <span class="font-bold text-green-600" style="color:#000 !important">{{ $prediction->confidence ?? '-' }}/100</span>
                             </td>
-                            <td class="px-6 py-4 text-right pr-6" data-label="Odds">
-                                <span class="font-black text-slate-900">{{ $pred->odds ?? '-' }}</span>
+                            <td class="px-6 py-4 text-right pr-6" data-label="Probability">
+                                <span class="font-black text-slate-900">{{ $prediction->probability ?? '-' }}%</span>
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-slate-400">
                                 <i class="fas fa-search text-3xl mb-3 block opacity-30"></i>
-                                No sure picks yet. Check back shortly!
+                                New Sure Picks will appear when qualified 1X2 predictions become available.
                             </td>
                         </tr>
                         @endforelse
@@ -414,12 +414,12 @@
         </div>
 
         <div class="space-y-10">
-            @foreach($featuredByLeague as $leagueName => $fixtures)
+            @foreach($featuredByLeague as $leagueName => $predictions)
             <div data-aos="fade-up">
                 <div class="flex items-center space-x-3 mb-4">
                     <span class="w-1.5 h-6 bg-primary-500 rounded-full"></span>
                     <h4 class="text-xl font-black text-slate-900">{{ $leagueName }}
-                        <span class="ml-3 text-[10px] font-black text-slate-400 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-widest">{{ $fixtures[0]['league_country'] }}</span>
+                        <span class="ml-3 text-[10px] font-black text-slate-400 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-widest">{{ $predictions[0]->league?->country ?? '' }}</span>
                     </h4>
                 </div>
                 
@@ -429,16 +429,16 @@
                             <tr class="bg-slate-50 border-b border-slate-100">
                                 <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Time</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Match</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Score</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tip</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence</th>
-                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right pr-6">Odds</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Market</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Selection</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Probability</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right pr-6">Confidence</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            @foreach($fixtures as $fixture)
-                                @foreach($fixture->predictions as $prediction)
-                                <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location='{{ route('match.detail', $fixture->id) }}'">
+                            @foreach($predictions as $prediction)
+                                @php $fixture = $prediction->fixture; @endphp
+                                <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location='{{ $fixture && $fixture->slug ? route('predictions.fixture', ['league' => $prediction->league?->slug ?? 'predictions', 'fixture' => $fixture->slug]) : route('predictions') }}'">
                                     <td class="px-6 py-4" data-label="Time">
                                         <span class="font-bold text-slate-900">{{ $fixture->match_date->format('H:i') }}</span>
                                     </td>
@@ -451,27 +451,21 @@
                                             <img src="{{ $fixture->away_team_logo }}" class="w-5 h-5 object-contain">
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-center" data-label="Score">
-                                        @if(in_array($fixture->status, ['FT','AET','PEN']))
-                                            @php $scoreWon = $prediction->status === 'won'; @endphp
-                                            <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $fixture->home_goals }} – {{ $fixture->away_goals }}</span>
-                                        @else
-                                            <span class="text-slate-300 font-bold">––</span>
-                                        @endif
+                                    <td class="px-6 py-4" data-label="Market">
+                                        <span class="text-xs font-bold text-slate-500 uppercase">{{ $prediction->category ?? strtoupper($prediction->market_code) }}</span>
                                     </td>
                                     <td class="px-6 py-4" data-label="Tip">
                                         <span class="px-3 py-1.5 bg-primary-50 text-primary-700 rounded-xl text-sm font-bold">
-                                            {{ $prediction->tip }}
+                                            {{ $prediction->effective_selection }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4" data-label="Confidence">
-                                        <span class="font-bold text-primary-600">{{ $prediction->confidence }}%</span>
+                                    <td class="px-6 py-4" data-label="Probability">
+                                        <span class="font-bold text-slate-900">{{ $prediction->probability }}%</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right pr-6" data-label="Odds">
-                                        <span class="font-black text-slate-900">{{ $prediction->odds ?? '-' }}</span>
+                                    <td class="px-6 py-4 text-right pr-6" data-label="Confidence">
+                                        <span class="font-bold text-primary-600">{{ $prediction->confidence }}/100</span>
                                     </td>
                                 </tr>
-                                @endforeach
                             @endforeach
                         </tbody>
                     </table>

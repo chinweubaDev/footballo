@@ -17,6 +17,7 @@ class Fixture extends Model
         'league_flag',
         'league_id',
         'season',
+        'slug',
         'round',
         'home_team',
         'away_team',
@@ -55,6 +56,7 @@ class Fixture extends Model
     {
         return [
             'match_date' => 'datetime',
+            'elapsed' => 'integer',
             'today_tip' => 'boolean',
             'featured' => 'boolean',
             'maxodds_tip' => 'boolean',
@@ -126,5 +128,29 @@ class Fixture extends Model
     public function scopeVvip($query)
     {
         return $query->where('is_vvip', true);
+    }
+
+    /**
+     * Get the League configuration that owns this fixture (by API-Football league id).
+     */
+    public function league()
+    {
+        return $this->belongsTo(\App\Models\League::class, 'league_id', 'api_football_league_id');
+    }
+
+    /**
+     * Feature snapshots generated for this fixture.
+     */
+    public function features()
+    {
+        return $this->hasMany(\App\Models\PredictionFeature::class);
+    }
+
+    /**
+     * Scope for upcoming fixtures (kickoff at or after now).
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('match_date', '>=', now());
     }
 }
