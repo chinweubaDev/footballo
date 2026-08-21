@@ -42,6 +42,9 @@ trait InteractsWithPredictionSchema
             $table->string('code')->unique();
             $table->boolean('enabled')->default(true);
             $table->integer('min_confidence')->default(75);
+            $table->integer('min_probability')->nullable();
+            $table->integer('minimum_sample_size')->default(100);
+            $table->string('gate_status')->default('none');
             $table->boolean('homepage_enabled')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
@@ -64,6 +67,20 @@ trait InteractsWithPredictionSchema
             $table->string('action');
             $table->string('from_status')->nullable();
             $table->string('to_status')->nullable();
+            $table->unsignedBigInteger('admin_id')->nullable();
+            $table->text('reason')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('prediction_gate_audits', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('prediction_category_id');
+            $table->string('market_code');
+            $table->string('action');
+            $table->integer('old_probability')->nullable();
+            $table->integer('new_probability')->nullable();
+            $table->integer('old_confidence')->nullable();
+            $table->integer('new_confidence')->nullable();
             $table->unsignedBigInteger('admin_id')->nullable();
             $table->text('reason')->nullable();
             $table->timestamps();
@@ -247,6 +264,7 @@ trait InteractsWithPredictionSchema
         Schema::dropIfExists('prediction_performance');
         Schema::dropIfExists('prediction_features');
         Schema::dropIfExists('prediction_overrides');
+        Schema::dropIfExists('prediction_gate_audits');
         Schema::dropIfExists('prediction_logs');
         Schema::dropIfExists('predictions');
         Schema::dropIfExists('fixtures');

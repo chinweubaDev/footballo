@@ -51,13 +51,15 @@ class GateReportService
                 'brier_score' => $rec['brier_score'] ?? null,
                 'ci_lower' => $rec['ci_lower'] ?? null,
                 'ci_upper' => $rec['ci_upper'] ?? null,
-                'status' => $rec['recommended_min_probability'] !== null
-                    ? ($rec['accuracy'] >= (float) config('evaluation.status_classification.strong_accuracy', 62.0)
-                        ? GateOptimizer::STATUS_CURRENT
-                        : GateOptimizer::STATUS_PROMISING)
-                    : ($rec['resolved'] !== null && $rec['resolved'] < (int) config('evaluation.gate_optimizer.minimum_sample_size', 100)
-                        ? GateOptimizer::STATUS_INSUFFICIENT_DATA
-                        : GateOptimizer::STATUS_WEAK),
+                'status' => match (true) {
+                    ($rec['resolved'] ?? 0) < (int) config('evaluation.gate_optimizer.minimum_sample_size', 100)
+                        => GateOptimizer::STATUS_INSUFFICIENT_DATA,
+                    ($rec['recommended_min_probability'] ?? null) === null
+                        => GateOptimizer::STATUS_WEAK,
+                    ($rec['accuracy'] ?? 0) >= (float) config('evaluation.status_classification.strong_accuracy', 62.0)
+                        => GateOptimizer::STATUS_CURRENT,
+                    default => GateOptimizer::STATUS_PROMISING,
+                },
                 'reason' => $rec['reason'] ?? null,
                 'gate_status' => $category->gate_status ?? 'none',
                 'grid' => $grid,

@@ -112,8 +112,8 @@ class GateOptimizer
                     'brier_score' => $summary['brier_score'],
                     'avg_probability' => $summary['avg_probability'],
                     'avg_confidence' => $summary['avg_confidence'],
-                    'ci_lower' => $summary['accuracy'] !== null && $half !== null ? round($summary['accuracy'] - $half * 100, 2) : null,
-                    'ci_upper' => $summary['accuracy'] !== null && $half !== null ? round($summary['accuracy'] + $half * 100, 2) : null,
+                    'ci_lower' => $summary['accuracy'] !== null && $half !== null ? round(max(0.0, $summary['accuracy'] - $half * 100), 2) : null,
+                    'ci_upper' => $summary['accuracy'] !== null && $half !== null ? round(min(100.0, $summary['accuracy'] + $half * 100), 2) : null,
                     'sample_label' => $this->sampleLabel($n, $insufficient, $minimum),
                 ];
             }

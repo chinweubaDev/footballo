@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PredictionLeagueController;
 use App\Http\Controllers\Admin\PredictionMarketController;
 use App\Http\Controllers\Admin\PredictionPerformanceController;
 use App\Http\Controllers\Admin\PredictionModelController;
+use App\Http\Controllers\Admin\PredictionGateController;
 use App\Http\Controllers\Admin\BacktestController;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -116,6 +117,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::post('/predictions/models/{model}/reject', [PredictionModelController::class, 'reject'])->name('predictions.models.reject');
     Route::post('/predictions/models/{model}/activate', [PredictionModelController::class, 'activate'])->name('predictions.models.activate');
     Route::post('/predictions/models/{model}/retire', [PredictionModelController::class, 'retire'])->name('predictions.models.retire');
+
+    // Publication gate optimization (Phase 1G.1)
+    Route::get('/predictions/gates', [PredictionGateController::class, 'index'])->name('predictions.gates');
+    Route::post('/predictions/gates/{category}/approve', [PredictionGateController::class, 'approve'])->name('predictions.gates.approve');
+    Route::post('/predictions/gates/{category}/reject', [PredictionGateController::class, 'reject'])->name('predictions.gates.reject');
 
     // Shadow mode & multi-league validation
     Route::get('/predictions/shadow', [PredictionModelController::class, 'shadow'])->name('predictions.shadow');
