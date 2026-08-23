@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BacktestRun;
 use App\Models\Fixture;
+use App\Models\PredictionModel;
 use App\Services\Prediction\Confidence\ConfidenceEngine;
 use App\Services\Prediction\Evaluation\BacktestDataCollector;
 use App\Services\Prediction\Evaluation\BacktestEngine;
@@ -24,6 +25,16 @@ class AblationServiceTest extends TestCase
     {
         parent::setUp();
         $this->migratePhase1ASchema();
+
+        // AblationService runs BacktestEngine, which requires a registered
+        // model version (Phase 1H integrity).
+        PredictionModel::create([
+            'name' => 'Esurebet Statistical Ensemble',
+            'version' => 'v1.0.0',
+            'configuration' => null,
+            'active' => true,
+            'status' => 'candidate',
+        ]);
     }
 
     protected function engine(): BacktestEngine

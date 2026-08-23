@@ -21,6 +21,7 @@ class League extends Model
         'homepage_enabled',
         'priority',
         'prediction_min_confidence',
+        'prediction_min_probability',
         'auto_publish',
     ];
 
@@ -33,6 +34,7 @@ class League extends Model
             'homepage_enabled' => 'boolean',
             'priority' => 'integer',
             'prediction_min_confidence' => 'integer',
+            'prediction_min_probability' => 'integer',
             'auto_publish' => 'boolean',
         ];
     }

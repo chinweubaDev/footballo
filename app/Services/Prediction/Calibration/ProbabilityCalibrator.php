@@ -34,8 +34,10 @@ class ProbabilityCalibrator
     /**
      * @param list<float> $probabilities raw probabilities (0-100)
      * @param list<int>   $outcomes      1 = won, 0 = lost (same length)
+     * @param int         $maxIterations  gradient-descent cap (Platt only)
+     * @param float       $learningRate   gradient-descent step (Platt only)
      */
-    public function fit(array $probabilities, array $outcomes, string $method = self::PLATT): self
+    public function fit(array $probabilities, array $outcomes, string $method = self::PLATT, int $maxIterations = 3000, float $learningRate = 0.5): self
     {
         if (count($probabilities) !== count($outcomes) || count($probabilities) === 0) {
             throw new \InvalidArgumentException('Calibration requires equal-length, non-empty inputs.');
@@ -46,7 +48,7 @@ class ProbabilityCalibrator
         if ($method === self::ISOTONIC) {
             $this->fitIsotonic($probabilities, $outcomes);
         } else {
-            $this->fitPlatt($probabilities, $outcomes);
+            $this->fitPlatt($probabilities, $outcomes, $maxIterations, $learningRate);
         }
 
         return $this;
@@ -108,7 +110,7 @@ class ProbabilityCalibrator
      * @param list<float> $probabilities
      * @param list<int>   $outcomes
      */
-    protected function fitPlatt(array $probabilities, array $outcomes): void
+    protected function fitPlatt(array $probabilities, array $outcomes, int $maxIterations = 3000, float $learningRate = 0.5): void
     {
         $xs = [];
         $ys = [];
@@ -121,10 +123,10 @@ class ProbabilityCalibrator
         // Full-batch gradient descent on the two Platt parameters.
         $a = 0.0;
         $b = 0.0;
-        $lr = 0.5;
+        $lr = $learningRate;
         $n = count($xs);
 
-        for ($it = 0; $it < 3000; $it++) {
+        for ($it = 0; $it < $maxIterations; $it++) {
             $ga = 0.0;
             $gb = 0.0;
 

@@ -20,6 +20,9 @@ class BacktestPrediction extends Model
         'market_code',
         'selection',
         'probability',
+        'raw_probability',
+        'calibrated_probability',
+        'calibration_version',
         'confidence',
         'model_version',
         'data_quality_score',
@@ -35,6 +38,8 @@ class BacktestPrediction extends Model
     {
         return [
             'probability' => 'decimal:2',
+            'raw_probability' => 'decimal:2',
+            'calibrated_probability' => 'decimal:2',
             'confidence' => 'integer',
             'data_quality_score' => 'integer',
             'prediction_data' => 'array',

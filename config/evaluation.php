@@ -38,9 +38,12 @@ return [
     'confidence_buckets' => [50, 60, 70, 80, 90, 100],
 
     /*
-    | Probability buckets (%). Same semantics as confidence buckets.
+    | Probability buckets (%). Same semantics as confidence buckets, but the
+    | range spans 0–100 so low-probability markets (Draw, Correct Score, BTTS)
+    | are calibrated instead of being silently dropped below a 50% floor.
+    | This fixes the historical ECE = 0 artifact for low-probability markets.
     */
-    'probability_buckets' => [50, 60, 70, 80, 90, 100],
+    'probability_buckets' => [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
 
     /*
     | Brier score: mean((predicted_probability - actual_outcome)^2), lower is
@@ -211,6 +214,81 @@ return [
             'accuracy' => (float) env('EVAL_GATE_W_ACCURACY', 0.45),
             'brier' => (float) env('EVAL_GATE_W_BRIER', 0.30),
             'coverage' => (float) env('EVAL_GATE_W_COVERAGE', 0.25),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Live evidence strength labels (Phase 1K §20)
+    |--------------------------------------------------------------------------
+    |
+    |   INSUFFICIENT        resolved < preliminary
+    |   PRELIMINARY         preliminary <= resolved < meaningful
+    |   MEANINGFUL          meaningful <= resolved < strong
+    |   STRONGER EVIDENCE   resolved >= strong
+    |
+    | These describe evidence strength — they are NOT significance guarantees.
+    */
+    'evidence' => [
+        'preliminary' => (int) env('EVAL_EVIDENCE_PRELIMINARY', 50),
+        'meaningful' => (int) env('EVAL_EVIDENCE_MEANINGFUL', 100),
+        'strong' => (int) env('EVAL_EVIDENCE_STRONG', 500),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Phase 1G.2 validation matrix
+    |--------------------------------------------------------------------------
+    |
+    | Configures the full League x Market x Model validation matrix. All
+    | thresholds are configurable via environment variables and never hardcode
+    | a market/league verdict.
+    |
+    | Sample-size labels (configurable):
+    |   INSUFFICIENT   n < insufficient_sample_threshold
+    |   LOW            insufficient_sample_threshold <= n < adequate_sample_threshold
+    |   ADEQUATE       n >= adequate_sample_threshold
+    */
+    'matrix' => [
+        // Minimum resolved predictions before a row is considered measurable.
+        'insufficient_sample_threshold' => (int) env('EVAL_MATRIX_INSUFFICIENT_SAMPLE', 50),
+        'adequate_sample_threshold' => (int) env('EVAL_MATRIX_ADQUATE_SAMPLE', 100),
+
+        // Publication gate under evaluation (probability / confidence).
+        'publication_gate' => [
+            'min_probability' => (int) env('EVAL_MATRIX_GATE_PROBABILITY', 70),
+            'min_confidence' => (int) env('EVAL_MATRIX_GATE_CONFIDENCE', 75),
+        ],
+
+        // Alternative gates swept analytically (probability/confidence pairs).
+        // Never applied to production settings.
+        'gate_comparison' => [
+            [60, 60],
+            [65, 65],
+            [70, 70],
+            [70, 75],
+            [75, 75],
+            [80, 80],
+        ],
+
+        // Confidence tiers evaluated per league x market.
+        'confidence_tiers' => [50, 60, 70, 80, 90],
+
+        // Ranking composite weights. Accuracy is NOT the whole score.
+        'ranking_weights' => [
+            'accuracy' => (float) env('EVAL_MATRIX_W_ACCURACY', 0.30),
+            'brier' => (float) env('EVAL_MATRIX_W_BRIER', 0.25),
+            'coverage' => (float) env('EVAL_MATRIX_W_COVERAGE', 0.15),
+            'calibration' => (float) env('EVAL_MATRIX_W_CALIBRATION', 0.20),
+            'sample' => (float) env('EVAL_MATRIX_W_SAMPLE', 0.10),
+        ],
+
+        // Publication candidate criteria (derived, never auto-applied).
+        'candidate' => [
+            'min_accuracy' => (float) env('EVAL_MATRIX_CANDIDATE_ACCURACY', 55.0),
+            'max_brier' => (float) env('EVAL_MATRIX_CANDIDATE_BRIER', 0.25),
+            'min_gate_accuracy' => (float) env('EVAL_MATRIX_CANDIDATE_GATE_ACCURACY', 60.0),
+            'min_gate_sample' => (int) env('EVAL_MATRIX_CANDIDATE_GATE_SAMPLE', 50),
         ],
     ],
 ];

@@ -34,6 +34,39 @@ class PredictionAdminController extends Controller
         ]);
     }
 
+    /**
+     * Phase 1J — live shadow validation dashboard.
+     */
+    public function live()
+    {
+        $fixturesToday = \App\Models\Fixture::whereDate('match_date', today())->count();
+
+        $counts = [
+            'fixtures_today' => $fixturesToday,
+            'generated' => Prediction::where('status', 'generated')->count(),
+            'published' => Prediction::where('status', 'published')->count(),
+            'no_bet' => Prediction::where('status', 'no_bet')->count(),
+            'shadow' => Prediction::where('status', 'shadow')->count(),
+            'locked' => Prediction::whereNotNull('locked_at')->count(),
+            'settled' => Prediction::whereNotNull('settled_at')->count(),
+            'overridden' => Prediction::whereNotNull('overridden_at')->count(),
+            'pending_review' => Prediction::where('status', 'pending_review')->count(),
+            'rejected' => Prediction::where('status', 'rejected')->count(),
+        ];
+
+        $byModel = Prediction::query()
+            ->selectRaw('model_version, count(*) as total, sum(case when result = "won" then 1 else 0 end) as won, sum(case when result = "lost" then 1 else 0 end) as lost, sum(case when result = "void" then 1 else 0 end) as void')
+            ->whereNotNull('result')
+            ->groupBy('model_version')
+            ->orderBy('model_version')
+            ->get();
+
+        return view('admin.predictions.live', [
+            'counts' => $counts,
+            'byModel' => $byModel,
+        ]);
+    }
+
     public function index(Request $request)
     {
         $query = Prediction::query()

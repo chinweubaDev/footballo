@@ -77,6 +77,29 @@ class ModelLifecycleTest extends TestCase
         $this->assertFalse((bool) $v100->fresh()->active);
     }
 
+    public function test_rollback_restores_previous_baseline_without_shadow_gate(): void
+    {
+        config()->set('evaluation.model_gate.minimum_shadow_predictions', 500);
+
+        $shadow = PredictionModel::where('version', 'v1.1.0')->first();
+        $v100 = PredictionModel::where('version', 'v1.0.0')->first();
+
+        // Promote v1.1.0 first (bypassing gate via rollback target setup).
+        $this->service->approve($shadow, $this->admin, 'promote');
+        config()->set('evaluation.model_gate.minimum_shadow_predictions', 0);
+        $this->service->activate($shadow->fresh(), $this->admin, 'promote');
+        $this->assertSame('v1.1.0', PredictionModel::where('active', true)->first()->version);
+
+        // Rollback to v1.0.0 — bypasses the promotion shadow-sample gate.
+        $this->service->rollback($v100->fresh(), $this->admin, 'regression detected');
+
+        $this->assertSame('v1.0.0', PredictionModel::where('active', true)->first()->version);
+        $this->assertSame(PredictionModel::STATUS_ACTIVE, $v100->fresh()->status);
+        $this->assertSame(PredictionModel::STATUS_RETIRED, $shadow->fresh()->status);
+
+        $this->assertTrue(ModelAuditLog::where('prediction_model_id', $v100->id)->where('action', 'rollback')->exists());
+    }
+
     public function test_lifecycle_transitions_are_audited(): void
     {
         config()->set('evaluation.model_gate.minimum_shadow_predictions', 0);

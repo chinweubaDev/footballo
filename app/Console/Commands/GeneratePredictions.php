@@ -7,6 +7,7 @@ use App\Models\League;
 use App\Models\Prediction;
 use App\Services\ApiFootballServiceEnhanced;
 use App\Services\Prediction\PredictionEngine;
+use App\Services\SystemEventService;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
@@ -15,7 +16,7 @@ class GeneratePredictions extends Command
     protected $signature = 'predictions:generate 
                             {--date= : Date to generate predictions for (Y-m-d, default: today)}
                             {--league= : Specific league ID}
-                            {--days=3 : Number of days ahead to generate}
+                            {--days=1 : Number of days ahead to generate (default: today only)}
                             {--force : Force regenerate existing predictions}
                             {--all : Include ALL leagues (default: top leagues only)}';
 
@@ -91,11 +92,13 @@ class GeneratePredictions extends Command
 
         $api = app(ApiFootballServiceEnhanced::class);
         $engine = app(PredictionEngine::class);
+        $events = app(SystemEventService::class);
 
         $enabledLeagueIds = League::query()
             ->where('enabled', true)
             ->where('prediction_enabled', true)
             ->pluck('api_football_league_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         if (empty($enabledLeagueIds)) {
@@ -113,31 +116,44 @@ class GeneratePredictions extends Command
         $totalGenerated = 0;
         $totalFailed = 0;
 
+        // Only fetch fixtures for the leagues we actually use — never the whole
+        // worldwide fixture list for a single date.
+        $targetLeagueIds = $leagueId ? [(int) $leagueId] : $enabledLeagueIds;
+
         for ($d = 0; $d < $days; $d++) {
             $currentDate = $date->copy()->addDays($d);
             $this->info("\n📅 Processing: {$currentDate->toDateString()}");
 
-            // Fetch fixtures from API (league-filtered requests also need the season).
-            $season = $leagueId ? $this->seasonForDate($currentDate) : null;
-            $fixturesData = $api->getFixturesByDate($currentDate->toDateString(), $leagueId, $season);
+            $dayFixtures = [];
 
-            if (!$fixturesData || empty($fixturesData['response'])) {
-                $this->warn("No fixtures found for {$currentDate->toDateString()}");
-                continue;
+            foreach ($targetLeagueIds as $targetLeagueId) {
+                // League-filtered requests require the season parameter.
+                $season = $this->seasonForDate($currentDate);
+                $fixturesData = $api->getFixturesByDate($currentDate->toDateString(), $targetLeagueId, $season);
+
+                if (!$fixturesData || empty($fixturesData['response'])) {
+                    continue;
+                }
+
+                foreach ($fixturesData['response'] as $row) {
+                    $dayFixtures[] = $row;
+                }
             }
 
-            $fixtures = $fixturesData['response'];
-            
-            // Keep only not-started fixtures from enabled leagues
-            $fixtures = array_values(array_filter($fixtures, function ($f) use ($enabledLeagueIds) {
+            // Safety net: keep only not-started fixtures from enabled leagues.
+            $fixtures = array_values(array_filter($dayFixtures, function ($f) use ($enabledLeagueIds) {
                 $status = $f['fixture']['status']['short'] ?? 'NS';
-                $league = $f['league']['id'] ?? 0;
+                $league = (int) ($f['league']['id'] ?? 0);
 
                 return in_array($status, ['NS', 'TBD', 'PST'], true) && in_array($league, $enabledLeagueIds, true);
             }));
-            
+
             $count = count($fixtures);
-            $this->info("Found {$count} fixture(s)");
+            $this->info("Found {$count} fixture(s) from ".count($targetLeagueIds).' enabled league(s)');
+
+            if ($count === 0) {
+                continue;
+            }
 
             $bar = $this->output->createProgressBar($count);
             $bar->start();
@@ -157,6 +173,16 @@ class GeneratePredictions extends Command
                 } catch (\Exception $e) {
                     $this->error("\nError with fixture {$fixtureData['fixture']['id']}: " . $e->getMessage());
                     $totalFailed++;
+
+                    $events->generationFailure(
+                        "Prediction generation failed for fixture {$fixtureData['fixture']['id']}: ".$e->getMessage(),
+                        [
+                            'command' => 'predictions:generate',
+                            'fixture_api_id' => $fixtureData['fixture']['id'] ?? null,
+                            'model_version' => 'v1.0.0',
+                            'exception' => get_class($e),
+                        ],
+                    );
                 }
             }
 

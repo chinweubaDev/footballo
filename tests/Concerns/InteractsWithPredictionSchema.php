@@ -31,6 +31,7 @@ trait InteractsWithPredictionSchema
             $table->boolean('homepage_enabled')->default(true);
             $table->integer('priority')->default(0);
             $table->integer('prediction_min_confidence')->default(75);
+            $table->integer('prediction_min_probability')->nullable();
             $table->boolean('auto_publish')->default(true);
             $table->timestamps();
         });
@@ -124,6 +125,7 @@ trait InteractsWithPredictionSchema
             $table->unsignedBigInteger('fixture_id')->nullable();
             $table->string('category')->nullable();
             $table->string('tip')->nullable();
+            $table->string('surepick_tip_content')->nullable();
             $table->integer('confidence')->nullable();
             $table->decimal('odds', 8, 2)->nullable();
             $table->text('analysis')->nullable();
@@ -133,6 +135,13 @@ trait InteractsWithPredictionSchema
             $table->string('market_code')->nullable();
             $table->string('selection')->nullable();
             $table->decimal('probability', 5, 2)->nullable();
+            $table->decimal('raw_probability', 5, 2)->nullable();
+            $table->decimal('calibrated_probability', 5, 2)->nullable();
+            $table->string('calibration_version')->nullable();
+            $table->integer('gate_probability')->nullable();
+            $table->integer('gate_confidence')->nullable();
+            $table->string('configuration_version')->nullable();
+            $table->string('publication_reason')->nullable();
             $table->string('model_version')->nullable();
             $table->unsignedBigInteger('model_id')->nullable();
             $table->string('original_selection')->nullable();
@@ -146,18 +155,75 @@ trait InteractsWithPredictionSchema
             $table->boolean('admin_featured')->default(false);
             $table->dateTime('locked_at')->nullable();
             $table->dateTime('published_at')->nullable();
+            $table->dateTime('prediction_generated_at')->nullable();
+            $table->dateTime('feature_data_timestamp')->nullable();
+            $table->string('provenance_status')->nullable();
             $table->text('explanation')->nullable();
             $table->string('explanation_status')->nullable();
             $table->unsignedBigInteger('league_id')->nullable();
             $table->integer('data_quality_score')->nullable();
+            $table->json('data_quality_flags')->nullable();
             $table->json('prediction_data')->nullable();
             $table->string('result')->nullable();
             $table->string('actual_score')->nullable();
             $table->dateTime('resolved_at')->nullable();
             $table->string('model_result')->nullable();
             $table->string('override_result')->nullable();
+            $table->string('public_result')->nullable();
+            $table->string('settlement_result')->nullable();
+            $table->dateTime('settled_at')->nullable();
+            $table->string('settlement_status')->nullable();
             $table->string('void_reason')->nullable();
             $table->json('result_corrections')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('league_market_gates', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('league_id');
+            $table->string('market_code');
+            $table->boolean('enabled')->default(true);
+            $table->integer('min_probability')->nullable();
+            $table->integer('min_confidence')->nullable();
+            $table->timestamps();
+
+            $table->unique(['league_id', 'market_code']);
+        });
+
+        Schema::create('publication_candidates', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('league_id');
+            $table->string('market_code');
+            $table->string('model_version');
+            $table->string('status')->default('candidate');
+            $table->integer('recommended_probability')->nullable();
+            $table->integer('recommended_confidence')->nullable();
+            $table->json('metrics')->nullable();
+            $table->dateTime('approved_at')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('system_events', function (Blueprint $table) {
+            $table->id();
+            $table->string('type');
+            $table->string('severity')->default('INFO');
+            $table->text('message');
+            $table->json('context')->nullable();
+            $table->dateTime('resolved_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('api_request_logs', function (Blueprint $table) {
+            $table->id();
+            $table->string('endpoint')->nullable();
+            $table->integer('status')->nullable();
+            $table->boolean('successful')->default(false);
+            $table->boolean('is_rate_limited')->default(false);
+            $table->integer('remaining_quota')->nullable();
+            $table->integer('duration_ms')->nullable();
+            $table->integer('retries')->default(0);
+            $table->string('error')->nullable();
             $table->timestamps();
         });
 
@@ -244,6 +310,9 @@ trait InteractsWithPredictionSchema
             $table->string('market_code');
             $table->string('selection')->nullable();
             $table->decimal('probability', 5, 2)->nullable();
+            $table->decimal('raw_probability', 5, 2)->nullable();
+            $table->decimal('calibrated_probability', 5, 2)->nullable();
+            $table->string('calibration_version')->nullable();
             $table->integer('confidence')->nullable();
             $table->string('model_version')->nullable();
             $table->integer('data_quality_score')->nullable();
@@ -255,16 +324,43 @@ trait InteractsWithPredictionSchema
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
         });
+
+        // Queue tables (Phase 1N /admin/system/queue dashboard).
+        Schema::create('jobs', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('queue');
+            $table->longText('payload');
+            $table->unsignedTinyInteger('attempts');
+            $table->unsignedInteger('reserved_at')->nullable();
+            $table->unsignedInteger('available_at');
+            $table->unsignedInteger('created_at');
+        });
+
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid')->nullable();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at');
+        });
     }
 
     protected function dropPhase1ATables(): void
     {
+        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('jobs');
         Schema::dropIfExists('backtest_predictions');
         Schema::dropIfExists('backtest_runs');
         Schema::dropIfExists('prediction_performance');
         Schema::dropIfExists('prediction_features');
         Schema::dropIfExists('prediction_overrides');
         Schema::dropIfExists('prediction_gate_audits');
+        Schema::dropIfExists('publication_candidates');
+        Schema::dropIfExists('league_market_gates');
+        Schema::dropIfExists('api_request_logs');
+        Schema::dropIfExists('system_events');
         Schema::dropIfExists('prediction_logs');
         Schema::dropIfExists('predictions');
         Schema::dropIfExists('fixtures');

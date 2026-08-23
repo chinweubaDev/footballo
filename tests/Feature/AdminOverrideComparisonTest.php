@@ -8,6 +8,7 @@ use App\Services\Prediction\Evaluation\MarketResultResolver;
 use App\Services\Prediction\Evaluation\PredictionResultService;
 use App\Services\Prediction\Evaluation\PerformanceAnalyticsService;
 use App\Services\Prediction\Evaluation\MetricsCalculator;
+use App\Services\Prediction\FeatureProvenanceService;
 use App\Services\Prediction\Admin\AuditLogger;
 use Tests\Concerns\InteractsWithPredictionSchema;
 use Tests\TestCase;
@@ -51,7 +52,7 @@ class AdminOverrideComparisonTest extends TestCase
             'status' => 'published',
         ]);
 
-        $resolver = new PredictionResultService(new MarketResultResolver(), new AuditLogger());
+        $resolver = new PredictionResultService(new MarketResultResolver(), new AuditLogger(), new FeatureProvenanceService());
         $resolver->resolvePrediction($prediction, $fixture);
 
         $prediction->refresh();

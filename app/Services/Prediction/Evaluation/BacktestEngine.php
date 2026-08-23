@@ -5,7 +5,9 @@ namespace App\Services\Prediction\Evaluation;
 use App\Models\BacktestPrediction;
 use App\Models\BacktestRun;
 use App\Models\Fixture;
-use App\Models\League;
+use App\Models\PredictionModel;
+use App\Services\Prediction\Calibration\ModelConfigurationService;
+use App\Services\Prediction\Calibration\ProbabilityCalibrator;
 use App\Services\Prediction\Confidence\ConfidenceEngine;
 use App\Services\Prediction\FeatureEngine;
 use App\Services\Prediction\Markets\BttsMarket;
@@ -26,11 +28,30 @@ use Illuminate\Support\Facades\Log;
  *     never touched.
  *   - Walk-forward evaluation: each fixture's context is built only from
  *     fixtures that finished before its kickoff (no future-data leakage).
- *   - Reproducible: weights/thresholds are read from the run's config snapshot.
+ *   - Model version integrity: the requested model version is loaded and
+ *     FAILS the run if it does not exist — it never silently falls back to
+ *     another version's weights or calibration.
+ *   - Calibration equivalence: the same ModelConfigurationService used by the
+ *     live PredictionEngine resolves weights and per-market calibrators.
+ *     For calibrated model versions the backtest uses TRUE walk-forward
+ *     calibration — calibrators are refit at each fixture using only
+ *     strictly-past predictions and outcomes (no leakage).
  */
 class BacktestEngine
 {
     protected const KNOWN_MARKETS = ['1x2', 'draw', 'double_chance', 'over_1_5', 'over_2_5', 'btts', 'correct_score'];
+
+    /**
+     * Minimum resolved walk-forward samples before a per-market calibrator is
+     * fit. Mirrors WalkForwardCalibrator::MIN_TRAIN_SAMPLES.
+     */
+    protected const MIN_WALK_FORWARD_SAMPLES = 30;
+
+    /**
+     * Platt gradient-descent budget for walk-forward refits (keeps the
+     * expanding-window backtest tractable while remaining deterministic).
+     */
+    protected const WALK_FORWARD_MAX_ITERATIONS = 300;
 
     public function __construct(
         protected BacktestDataCollector $collector,
@@ -39,7 +60,9 @@ class BacktestEngine
         protected ConfidenceEngine $confidence,
         protected MarketResultResolver $resolver,
         protected MetricsCalculator $metrics,
+        protected ?ModelConfigurationService $config = null,
     ) {
+        $this->config ??= new ModelConfigurationService();
     }
 
     /**
@@ -50,6 +73,13 @@ class BacktestEngine
      */
     public function run(BacktestRun $run): array
     {
+        // Model version integrity — fail fast, never fall back.
+        $model = PredictionModel::query()->where('version', $run->model_version)->first();
+
+        if ($model === null) {
+            return $this->fail($run, "Model version '{$run->model_version}' is not registered. Aborting — no silent fallback to another model.");
+        }
+
         $run->update([
             'status' => BacktestRun::STATUS_RUNNING,
             'started_at' => now(),
@@ -74,44 +104,56 @@ class BacktestEngine
             ], BacktestRun::STATUS_COMPLETED);
         }
 
+        // Shared configuration resolution — identical to the live engine.
+        $weights = $this->config->resolveWeights($model);
+        $walkForwardCalibration = $this->config->hasCalibration($model);
+
+        // Expanding-window history of (raw probability, outcome) per market,
+        // populated strictly fixture-by-fixture in chronological order.
+        $history = [];
+
         $processed = 0;
         $generated = 0;
         $now = now();
+        $buffer = [];
 
-        $this->eligibleQuery($run)
-            ->chunkById(50, function ($fixtures) use ($run, &$processed, &$generated, $now) {
-                // Cooperative cancellation is checked once per chunk.
-                if ($run->fresh()->status === BacktestRun::STATUS_CANCELLED) {
-                    return false;
-                }
+        $fixtures = $this->eligibleQuery($run)
+            ->orderBy('match_date')
+            ->get(['id', 'league_id', 'season', 'home_team_id', 'away_team_id', 'home_goals', 'away_goals', 'match_date', 'status']);
 
-                $buffer = [];
+        foreach ($fixtures as $fixture) {
+            try {
+                $rows = $this->evaluateFixture($run, $fixture, $weights, $walkForwardCalibration, $history, $now);
+                $buffer = array_merge($buffer, $rows);
+                $generated += count($rows);
+            } catch (\Throwable $e) {
+                Log::warning('Backtest fixture skipped', [
+                    'backtest_run_id' => $run->id,
+                    'fixture_id' => $fixture->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
-                foreach ($fixtures as $fixture) {
-                    try {
-                        $rows = $this->buildRows($run, $fixture, $now);
-                        $buffer = array_merge($buffer, $rows);
-                        $generated += count($rows);
-                    } catch (\Throwable $e) {
-                        Log::warning('Backtest fixture skipped', [
-                            'backtest_run_id' => $run->id,
-                            'fixture_id' => $fixture->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
+            $processed++;
 
-                    $processed++;
-                }
-
+            // Batch persistence + cooperative cancellation check every N
+            // fixtures to keep remote-database round-trips low.
+            if ($processed % 25 === 0 || $processed === $total) {
                 if (! empty($buffer)) {
                     BacktestPrediction::insert($buffer);
+                    $buffer = [];
                 }
 
                 $run->update([
                     'processed_fixtures' => $processed,
                     'generated_predictions' => $generated,
                 ]);
-            });
+
+                if ($run->fresh()->status === BacktestRun::STATUS_CANCELLED) {
+                    break;
+                }
+            }
+        }
 
         // If cancelled mid-run, stop without producing metrics.
         if ($run->fresh()->status === BacktestRun::STATUS_CANCELLED) {
@@ -130,14 +172,18 @@ class BacktestEngine
 
     /**
      * Fail the run with an error message (preserving partial progress).
+     *
+     * @return array<string,mixed>
      */
-    public function fail(BacktestRun $run, string $message): void
+    public function fail(BacktestRun $run, string $message): array
     {
         $run->update([
             'status' => BacktestRun::STATUS_FAILED,
             'error' => $message,
             'completed_at' => now(),
         ]);
+
+        return [];
     }
 
     /**
@@ -165,13 +211,30 @@ class BacktestEngine
     }
 
     /**
-     * Generate and resolve every selected market for one historical fixture,
-     * returning the rows to persist (bulk-inserted by the caller).
+     * Generate and resolve every selected market for one historical fixture.
      *
+     * Pipeline (identical to the live PredictionEngine):
+     *   raw ensemble probability -> model calibration -> calibrated probability
+     *   -> confidence -> publication status -> result resolution.
+     *
+     * For calibrated model versions (e.g. v1.1.0), calibration is performed
+     * WALK-FORWARD: calibrators are refit at each fixture from strictly-past
+     * raw predictions and outcomes, so no future data leaks into the
+     * calibration. The pre-trained parameters stored on the model are only
+     * used by the LIVE engine (and documented) — they are never used to
+     * produce the walk-forward validation.
+     *
+     * @param list<array<string,mixed>> $history expanding-window calibration history (mutated in place)
      * @return list<array<string,mixed>>
      */
-    protected function buildRows(BacktestRun $run, Fixture $fixture, \Illuminate\Support\Carbon $now): array
-    {
+    protected function evaluateFixture(
+        BacktestRun $run,
+        Fixture $fixture,
+        array $weights,
+        bool $walkForwardCalibration,
+        array &$history,
+        \Illuminate\Support\Carbon $now,
+    ): array {
         $context = $this->collector->collect($fixture);
 
         $snapshot = $run->config_snapshot ?? [];
@@ -180,17 +243,19 @@ class BacktestEngine
         $ablated = is_array($snapshot['ablations'] ?? null) ? $snapshot['ablations'] : [];
 
         $features = $this->features->build($context, $ablated);
-        $ensemble = $this->ensemble->predict($context, $features, $this->resolveWeights($run));
+        $ensemble = $this->ensemble->predict($context, $features, $weights);
         $minConfidence = (int) ($run->min_confidence ?? $snapshot['min_confidence'] ?? 0);
         $minProbability = (float) ($run->min_probability ?? $snapshot['min_probability'] ?? 0);
-        // Backtests evaluate the model's raw predictions. Unlike live
-        // publishing, data quality is recorded for analysis but is NOT used as
-        // a bet gate (historical odds/API-AI/injuries are unavailable, which
-        // would otherwise cap data quality and mark everything NO_BET).
+        // Backtests evaluate the model's predictions. Unlike live publishing,
+        // data quality is recorded for analysis but is NOT used as a bet gate
+        // (historical odds/API-AI/injuries are unavailable, which would
+        // otherwise cap data quality and mark everything NO_BET).
         $minDataQuality = 0;
 
         $score = "{$fixture->home_goals}-{$fixture->away_goals}";
-        $rows = [];
+
+        // Pass 1: raw market probabilities (production's un-calibrated math).
+        $rawByMarket = [];
 
         foreach ($this->markets($run) as $code) {
             $market = $this->marketFor($code);
@@ -206,9 +271,31 @@ class BacktestEngine
                 continue;
             }
 
-            $probability = (float) $calculated['probability'];
-            $confidence = $this->confidence->calculate($context, $code, $selection, $probability, $ensemble);
-            $status = $this->decideStatus($probability, $confidence['score'], $ensemble->dataQuality, $minConfidence, $minProbability, $minDataQuality);
+            $rawByMarket[$code] = [
+                'selection' => $selection,
+                'raw_probability' => (float) $calculated['probability'],
+                'scores' => $calculated['scores'] ?? null,
+            ];
+        }
+
+        // Pass 2: fit walk-forward calibrators from strictly-past outcomes.
+        $calibrators = $walkForwardCalibration ? $this->fitWalkForwardCalibrators($history) : [];
+
+        $rows = [];
+
+        foreach ($rawByMarket as $code => $entry) {
+            $raw = $entry['raw_probability'];
+            $calibrated = $raw;
+            $calibrationVersion = null;
+
+            if ($walkForwardCalibration && isset($calibrators[$code])) {
+                $calibrated = $calibrators[$code]->predict($raw);
+                $calibrationVersion = 'walk-forward';
+            }
+
+            $selection = $entry['selection'];
+            $confidence = $this->confidence->calculate($context, $code, $selection, $calibrated, $ensemble);
+            $status = $this->decideStatus($calibrated, $confidence['score'], $ensemble->dataQuality, $minConfidence, $minProbability, $minDataQuality);
 
             $result = $this->resolver->resolve($code, $selection, (int) $fixture->home_goals, (int) $fixture->away_goals);
 
@@ -217,11 +304,14 @@ class BacktestEngine
                 'fixture_id' => $fixture->id,
                 'market_code' => $code,
                 'selection' => $selection,
-                'probability' => $probability,
+                'probability' => $calibrated,
+                'raw_probability' => $raw,
+                'calibrated_probability' => $calibrated,
+                'calibration_version' => $calibrationVersion,
                 'confidence' => $confidence['score'],
                 'model_version' => $run->model_version,
                 'data_quality_score' => $ensemble->dataQuality,
-                'prediction_data' => isset($calculated['scores']) ? json_encode(['scores' => $calculated['scores']]) : null,
+                'prediction_data' => isset($entry['scores']) ? json_encode(['scores' => $entry['scores']]) : null,
                 'status' => $status,
                 'result' => $result,
                 'actual_score' => $score,
@@ -230,9 +320,48 @@ class BacktestEngine
                 'created_at' => $now->toDateTimeString(),
                 'updated_at' => $now->toDateTimeString(),
             ];
+
+            // Record this fixture's RAW probability + outcome for future
+            // walk-forward calibration (raw is the calibrator input).
+            if ($walkForwardCalibration && in_array($result, ['won', 'lost'], true)) {
+                $history[$code][] = [
+                    'p' => $raw,
+                    'y' => $result === 'won' ? 1 : 0,
+                ];
+            }
         }
 
         return $rows;
+    }
+
+    /**
+     * Fit per-market Platt calibrators from the expanding walk-forward history.
+     *
+     * @param array<string,list<array{p:float,y:int}>> $history
+     * @return array<string,ProbabilityCalibrator>
+     */
+    protected function fitWalkForwardCalibrators(array $history): array
+    {
+        $calibrators = [];
+
+        foreach ($history as $market => $samples) {
+            if (count($samples) < self::MIN_WALK_FORWARD_SAMPLES) {
+                continue;
+            }
+
+            $probabilities = array_column($samples, 'p');
+            $outcomes = array_column($samples, 'y');
+
+            $calibrators[$market] = (new ProbabilityCalibrator())->fit(
+                $probabilities,
+                $outcomes,
+                ProbabilityCalibrator::PLATT,
+                self::WALK_FORWARD_MAX_ITERATIONS,
+                0.5,
+            );
+        }
+
+        return $calibrators;
     }
 
     protected function decideStatus(
@@ -318,20 +447,6 @@ class BacktestEngine
         }
 
         return self::KNOWN_MARKETS;
-    }
-
-    /**
-     * Ensemble weights from the config snapshot (reproducibility).
-     *
-     * @return array<string,float>
-     */
-    protected function resolveWeights(BacktestRun $run): array
-    {
-        $snapshot = $run->config_snapshot ?? [];
-
-        $weights = $snapshot['ensemble']['weights'] ?? config('prediction.ensemble.weights', []);
-
-        return is_array($weights) ? $weights : [];
     }
 
     protected function marketFor(string $code): object|null

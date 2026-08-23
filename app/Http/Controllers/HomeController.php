@@ -25,7 +25,7 @@ class HomeController extends Controller
 
     public function index()
     {
-        $todayTips = Fixture::with('predictions')
+        $todayTips = Fixture::with(['predictions' => fn ($q) => $q->where('status', 'published')])
             ->todayTips()
             ->whereDate('match_date', today())
             ->orderBy('match_date')
@@ -34,12 +34,23 @@ class HomeController extends Controller
 
         // Fallback: show any fixtures for today (prefer finished/live so scores display)
         if ($todayTips->isEmpty()) {
-            $todayTips = Fixture::with('predictions')
+            $todayTips = Fixture::with(['predictions' => fn ($q) => $q->where('status', 'published')])
                 ->whereDate('match_date', today())
                 ->orderByRaw("FIELD(status, 'FT','AET','PEN','LIVE','1H','2H','HT','NS')")
                 ->orderBy('match_date')
                 ->limit(5)
                 ->get();
+        }
+
+        // One outcome per match: keep only the single strongest published tip
+        // for each fixture (highest confidence, then highest probability).
+        foreach ($todayTips as $tip) {
+            $best = $tip->predictions
+                ->sortByDesc(fn ($p) => [(int) ($p->confidence ?? 0), (float) ($p->probability ?? 0)])
+                ->take(1)
+                ->values();
+
+            $tip->setRelation('predictions', $best);
         }
 
         // Enrich today tips with full prediction data

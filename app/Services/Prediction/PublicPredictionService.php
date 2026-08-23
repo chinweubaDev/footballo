@@ -39,7 +39,8 @@ class PublicPredictionService
 
         $predictionFilters = function ($query) use ($leagueApiId, $marketCode, $enabledMarkets) {
             $query->where('status', 'published')
-                ->whereIn('market_code', $enabledMarkets);
+                ->whereIn('market_code', $enabledMarkets)
+                ->publicOdds();
 
             if ($leagueApiId) {
                 $query->where('league_id', $leagueApiId);
@@ -91,6 +92,7 @@ class PublicPredictionService
             'predictions' => function ($query) {
                 $query->where('status', 'published')
                     ->whereIn('market_code', $this->enabledMarketCodes())
+                    ->publicOdds()
                     ->orderByDesc('featured')
                     ->orderBy('featured_priority')
                     ->orderByDesc('confidence');

@@ -9,6 +9,8 @@ use App\Models\PredictionCategory;
 use App\Models\PredictionFeature;
 use App\Models\PredictionModel;
 use App\Services\Prediction\Admin\MarketGate;
+use App\Services\Prediction\Admin\PredictionPublicationService;
+use App\Services\Prediction\Calibration\ModelConfigurationService;
 use App\Services\Prediction\Calibration\ProbabilityCalibrator;
 use App\Services\Prediction\Confidence\ConfidenceEngine;
 use App\Services\Prediction\Markets\BttsMarket;
@@ -40,7 +42,10 @@ class PredictionEngine
         protected EnsemblePredictionModel $ensemble,
         protected ConfidenceEngine $confidence,
         protected MarketGate $gate,
+        protected ?ModelConfigurationService $config = null,
+        protected ?PredictionPublicationService $publication = null,
     ) {
+        $this->config ??= new ModelConfigurationService();
     }
 
     /**
@@ -81,7 +86,11 @@ class PredictionEngine
         $features = $this->features->build($context);
         $ensemble = $this->ensemble->predict($context, $features, $this->resolveWeights($model));
 
-        $markets = $this->evaluateMarkets($fixture, $context, $ensemble, $model);
+        // Shadow models bypass the publication gate so their predictions are
+        // recorded (as 'shadow') for later comparison — never published.
+        $isShadow = $model !== null && ! (bool) $model->active;
+
+        $markets = $this->evaluateMarkets($fixture, $context, $ensemble, $model, $isShadow);
 
         return [
             'context' => $context,
@@ -96,7 +105,7 @@ class PredictionEngine
     /**
      * @return array<string,array<string,mixed>>
      */
-    protected function evaluateMarkets(Fixture $fixture, PredictionContext $context, EnsembleResult $ensemble, ?PredictionModel $model = null): array
+    protected function evaluateMarkets(Fixture $fixture, PredictionContext $context, EnsembleResult $ensemble, ?PredictionModel $model = null, bool $shadow = false): array
     {
         $league = $fixture->league ?? null;
         $calibrators = $this->calibrators($model);
@@ -111,22 +120,30 @@ class PredictionEngine
 
             $calculated = $market->calculate($ensemble);
             $selection = $calculated['selection'];
-            $probability = $calculated['probability'];
+            $rawProbability = (float) $calculated['probability'];
+            $calibratedProbability = $rawProbability;
+            $calibrationVersion = null;
 
             // Apply per-market probability calibration when this model has one
             // (v1.1.0 candidate). v1.0.0 has no calibration and is untouched.
+            // The raw probability is preserved alongside the calibrated value.
             if (isset($calibrators[$category->code])) {
-                $probability = $calibrators[$category->code]->predict($probability);
+                $calibratedProbability = $calibrators[$category->code]->predict($rawProbability);
+                $calibrationVersion = $this->config->calibrationVersion($model);
             }
 
-            $confidence = $this->confidence->calculate($context, $category->code, $selection, $probability, $ensemble);
+            $confidence = $this->confidence->calculate($context, $category->code, $selection, $calibratedProbability, $ensemble);
             $thresholds = $this->thresholds($league, $category);
 
-            $status = $this->decideStatus($probability, $confidence['score'], $ensemble->dataQuality, $thresholds);
+            // Shadow models are evaluated but NEVER gated out — the gate
+            // values are still recorded so the decision is reproducible.
+            $status = $shadow
+                ? 'generated'
+                : $this->decideStatus($calibratedProbability, $confidence['score'], $ensemble->dataQuality, $thresholds);
 
             // Publication gate: disabled leagues (or leagues with prediction
             // disabled) never publish, even if the statistical thresholds pass.
-            if ($league && (! $league->enabled || ! $league->prediction_enabled)) {
+            if (! $shadow && $league && (! $league->enabled || ! $league->prediction_enabled)) {
                 $status = 'no_bet';
             }
 
@@ -134,7 +151,10 @@ class PredictionEngine
                 'category' => $category->name,
                 'slug' => $category->slug,
                 'selection' => $selection,
-                'probability' => $probability,
+                'probability' => $calibratedProbability,
+                'raw_probability' => $rawProbability,
+                'calibration_version' => $calibrationVersion,
+                'gate' => $thresholds,
                 'confidence' => $confidence['score'],
                 'confidence_level' => $confidence['level'],
                 'confidence_factors' => $confidence['factors'],
@@ -168,17 +188,31 @@ class PredictionEngine
     }
 
     /**
-     * Threshold precedence (Phase 1G.1): Market (category) -> League -> Global.
-     * Market-specific gates are the most granular and therefore win over the
-     * league-wide floor so an approved per-market gate always takes effect.
+     * Threshold precedence (Phase 1I): league+market > market > league > global.
+     * When the publication service is available it is the single source of
+     * truth; otherwise fall back to the market/league/global chain.
      */
     protected function thresholds(?League $league, PredictionCategory $category): array
     {
+        if ($this->publication !== null) {
+            $gate = $this->publication->resolveGate($league, $category);
+
+            return [
+                'min_confidence' => $gate['min_confidence'],
+                'min_probability' => $gate['min_probability'],
+                'min_data_quality' => $gate['min_data_quality'],
+                'auto_publish' => $league?->auto_publish ?? (bool) config('prediction.auto_publish', true),
+                'enabled' => $gate['enabled'],
+                'source' => $gate['source'],
+            ];
+        }
+
         $minConfidence = $category->min_confidence
             ?? $league?->prediction_min_confidence
             ?? config('prediction.min_confidence', 75);
 
         $minProbability = $category->min_probability
+            ?? $league?->prediction_min_probability
             ?? config('prediction.no_bet.min_probability', 70);
 
         return [
@@ -186,6 +220,8 @@ class PredictionEngine
             'min_probability' => (int) $minProbability,
             'min_data_quality' => (int) config('prediction.no_bet.min_data_quality', 65),
             'auto_publish' => $league?->auto_publish ?? (bool) config('prediction.auto_publish', true),
+            'enabled' => true,
+            'source' => 'market',
         ];
     }
 
@@ -228,14 +264,7 @@ class PredictionEngine
 
     protected function resolveWeights(?PredictionModel $model = null): array
     {
-        $model ??= $this->activeModel();
-        $configuration = $model?->configuration;
-
-        if (is_array($configuration) && isset($configuration['weights']) && is_array($configuration['weights'])) {
-            return $configuration['weights'];
-        }
-
-        return config('prediction.ensemble.weights', []);
+        return $this->config->resolveWeights($model ?? $this->activeModel());
     }
 
     /**
@@ -246,21 +275,7 @@ class PredictionEngine
      */
     protected function calibrators(?PredictionModel $model): array
     {
-        $configuration = $model?->configuration ?? [];
-
-        if (! is_array($configuration) || empty($configuration['calibration'])) {
-            return [];
-        }
-
-        $calibrators = [];
-
-        foreach ($configuration['calibration'] as $market => $parameters) {
-            if (is_array($parameters) && isset($parameters['method'])) {
-                $calibrators[$market] = ProbabilityCalibrator::fromParameters($parameters);
-            }
-        }
-
-        return $calibrators;
+        return $this->config->calibrators($model);
     }
 
     /**
@@ -308,9 +323,18 @@ class PredictionEngine
                     'status' => $status,
                     'selection' => $market['selection'],
                     'probability' => $market['probability'],
+                    'raw_probability' => $market['raw_probability'] ?? $market['probability'],
+                    'calibrated_probability' => $market['probability'],
+                    'calibration_version' => $market['calibration_version'] ?? null,
+                    'gate_probability' => $market['gate']['min_probability'] ?? null,
+                    'gate_confidence' => $market['gate']['min_confidence'] ?? null,
+                    'configuration_version' => $this->publication?->configurationVersion(),
                     'model_id' => $modelId,
                     'league_id' => $fixture->league_id,
                     'data_quality_score' => $ensemble->dataQuality,
+                    'data_quality_flags' => $this->dataQualityFlags($context),
+                    'prediction_generated_at' => now(),
+                    'feature_data_timestamp' => now(),
                     'explanation' => $this->explanation($fixture, $code, $market, $features),
                     'explanation_status' => 'generated',
                     'published_at' => $status === 'published' ? now() : null,
@@ -351,6 +375,22 @@ class PredictionEngine
                 ];
             }, $ensemble->modelPredictions),
         ]);
+    }
+
+    /**
+     * Structured missing-feature flags. Missing data is recorded as MISSING —
+     * it never inflates confidence or data quality (Phase 1J §24).
+     *
+     * @return array<string,bool>
+     */
+    protected function dataQualityFlags(PredictionContext $context): array
+    {
+        return [
+            'odds_missing' => ! (bool) ($context->odds['available'] ?? false),
+            'api_ai_missing' => ! (bool) ($context->apiPrediction['available'] ?? false),
+            'injuries_missing' => ! (bool) ($context->injuries['fetched'] ?? false),
+            'lineup_missing' => true, // lineups are not collected by the current pipeline
+        ];
     }
 
     protected function bestOdds(PredictionContext $context, string $code, string $selection): ?float

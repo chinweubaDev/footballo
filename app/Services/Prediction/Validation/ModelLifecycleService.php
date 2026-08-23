@@ -126,6 +126,37 @@ class ModelLifecycleService
     }
 
     /**
+     * Rollback: revert production to a previous model version with one
+     * controlled configuration change. This is a safety operation to a proven
+     * baseline and deliberately bypasses the promotion shadow-sample gate.
+     */
+    public function rollback(PredictionModel $model, User $admin, ?string $reason = null): PredictionModel
+    {
+        DB::transaction(function () use ($model, $admin, $reason) {
+            $previousActive = PredictionModel::where('active', true)->first();
+
+            if ($previousActive && $previousActive->id !== $model->id) {
+                $previousActive->update([
+                    'status' => PredictionModel::STATUS_RETIRED,
+                    'active' => false,
+                ]);
+
+                $this->log($previousActive, 'retired', PredictionModel::STATUS_ACTIVE, PredictionModel::STATUS_RETIRED, $admin, 'Rolled back to '.$model->version);
+            }
+
+            $previous = $model->status;
+            $model->update([
+                'status' => PredictionModel::STATUS_ACTIVE,
+                'active' => true,
+            ]);
+
+            $this->log($model, 'rollback', $previous, PredictionModel::STATUS_ACTIVE, $admin, $reason ?? 'Manual rollback');
+        });
+
+        return $model->fresh();
+    }
+
+    /**
      * Number of resolved shadow predictions for a model version.
      */
     public function shadowResolvedCount(PredictionModel $model): int

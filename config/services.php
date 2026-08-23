@@ -38,6 +38,14 @@ return [
     'api_football' => [
         'key' => env('FOOTBALL_API_KEY', env('API_FOOTBALL_KEY')),
         'base_url' => env('FOOTBALL_API_BASE_URL', 'https://v3.football.api-sports.io'),
+        // Phase 1K — retry/backoff for transient API failures.
+        'retry' => [
+            'max_attempts' => (int) env('FOOTBALL_API_MAX_ATTEMPTS', 4),
+            'base_delay' => (int) env('FOOTBALL_API_BASE_DELAY', 1),
+            'max_delay' => (int) env('FOOTBALL_API_MAX_DELAY', 30),
+            // Transient statuses that are worth retrying.
+            'transient_statuses' => [408, 429, 500, 502, 503, 504],
+        ],
     ],
 
     'flutterwave' => [
@@ -48,6 +56,23 @@ return [
 
     'newsapi' => [
         'key' => env('NEWSAPI_KEY'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue health (Phase 1N)
+    |--------------------------------------------------------------------------
+    |
+    | Thresholds used by the /admin/system/queue dashboard to classify the
+    | queue as HEALTHY / WARNING / FAILED.
+    */
+    'queue_health' => [
+        // Any unresolved critical event within this window => FAILED.
+        'critical_window_minutes' => (int) env('QUEUE_HEALTH_CRITICAL_MINUTES', 15),
+        // Any failed job within this window => WARNING.
+        'failed_window_hours' => (int) env('QUEUE_HEALTH_FAILED_HOURS', 24),
+        // Pending jobs above this => WARNING (backlog).
+        'pending_warning_threshold' => (int) env('QUEUE_HEALTH_PENDING_WARNING', 1000),
     ],
 
     'telegram' => [

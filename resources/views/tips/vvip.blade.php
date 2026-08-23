@@ -26,11 +26,11 @@
             <div class="flex flex-col sm:flex-row gap-4 justify-center" data-aos="fade-up" data-aos-delay="300">
                 <div class="inline-flex items-center px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl backdrop-blur-sm">
                     <i class="fas fa-gem mr-3"></i>
-                    <span>5 VVIP Accumulators Today</span>
+                    <span>3 VVIP Accumulators (2, 5 &amp; 10 odds)</span>
                 </div>
                 <div class="inline-flex items-center px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl backdrop-blur-sm">
                     <i class="fas fa-trophy mr-3"></i>
-                    <span>90% Win Rate</span>
+                    <span>Data-Driven Selections</span>
                 </div>
             </div>
         </div>
@@ -89,6 +89,7 @@
                     </div>
                     
                     <div class="p-6">
+                        <p class="text-xs text-slate-400 mb-4">Odds are bookmaker odds where available, otherwise model-implied fair odds (labelled "model odds"). Predictions carry no guarantee of winning.</p>
                         @if(count($tickets) > 0)
                             <div class="space-y-8">
                                 @foreach($tickets as $ticket)
@@ -101,12 +102,15 @@
                                             </div>
                                             <div>
                                                 <span class="text-white text-xs font-black uppercase tracking-widest opacity-70">Accumulator #{{ $ticket['ticket_number'] }}</span>
-                                                <h3 class="text-white font-black text-lg leading-tight">VVIP Acca {{ $ticket['ticket_number'] }}</h3>
+                                                <h3 class="text-white font-black text-lg leading-tight">VVIP Acca #{{ $ticket['ticket_number'] }} — Target {{ $ticket['target_odds'] }} odds</h3>
+                                                @if(!($ticket['reached_target'] ?? true))
+                                                    <span class="text-[9px] font-bold text-amber-300 uppercase tracking-wider">target not reached</span>
+                                                @endif
                                             </div>
                                         </div>
                                         <div class="text-right">
                                             <span class="text-white/60 text-[10px] font-black uppercase tracking-widest block">Total Odds</span>
-                                            <span class="text-2xl font-black text-yellow-300">{{ number_format($ticket['total_odds'], 2) }}</span>
+                                            <span class="text-2xl font-black text-yellow-300">{{ $ticket['total_odds'] !== null ? number_format($ticket['total_odds'], 2) : '—' }}</span>
                                         </div>
                                     </div>
 
@@ -128,7 +132,10 @@
                                                 </div>
                                                 <div class="text-right flex-shrink-0 ml-4">
                                                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Odds</span>
-                                                    <span class="text-lg font-black text-slate-900">{{ number_format($leg['odds'], 2) }}</span>
+                                                    <span class="text-lg font-black text-slate-900">{{ $leg['odds'] !== null ? number_format($leg['odds'], 2) : '—' }}</span>
+                                                    @if(($leg['odds_source'] ?? '') === 'model')
+                                                        <span class="text-[9px] font-bold text-amber-500 block">model odds</span>
+                                                    @endif
                                                 </div>
                                             </div>
                                             @endforeach
@@ -143,13 +150,13 @@
                                                 </div>
                                                 <div class="w-px h-8 bg-purple-200"></div>
                                                 <div>
-                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Avg Confidence</span>
-                                                    <span class="text-sm font-bold text-green-600">{{ $ticket['avg_confidence'] }}%</span>
+                                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Combined Win Chance</span>
+                                                    <span class="text-sm font-bold text-green-600">{{ $ticket['combined_probability'] !== null ? number_format($ticket['combined_probability'], 1).'%' : '—' }}</span>
                                                 </div>
                                             </div>
                                             <div class="text-right">
                                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Combined Odds</span>
-                                                <span class="text-xl font-black text-purple-600">{{ number_format($ticket['total_odds'], 2) }}</span>
+                                                <span class="text-xl font-black text-purple-600">{{ $ticket['total_odds'] !== null ? number_format($ticket['total_odds'], 2) : '—' }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -223,15 +230,15 @@
                         <ul class="space-y-4">
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">5 VVIP Accumulators Daily</span>
+                                <span class="text-sm text-slate-600">3 VVIP Accumulators (2, 5 &amp; 10 odds)</span>
                             </li>
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">3 Matches per Acca (15 Picks)</span>
+                                <span class="text-sm text-slate-600">Up to 5 matches per accumulator</span>
                             </li>
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>
-                                <span class="text-sm text-slate-600">99-100% Confidence Picks</span>
+                                <span class="text-sm text-slate-600">Highest-confidence Over 1.5 &amp; Double Chance picks</span>
                             </li>
                             <li class="flex items-center">
                                 <i class="fas fa-check text-green-500 mr-3"></i>

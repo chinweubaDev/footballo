@@ -26,6 +26,7 @@ class LeaguePredictionSettingsService
         $fields = array_filter([
             'season' => $data['season'] ?? null,
             'prediction_min_confidence' => $data['prediction_min_confidence'] ?? null,
+            'prediction_min_probability' => $data['prediction_min_probability'] ?? null,
             'priority' => $data['priority'] ?? null,
             'prediction_enabled' => $data['prediction_enabled'] ?? null,
             'homepage_enabled' => $data['homepage_enabled'] ?? null,

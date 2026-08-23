@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PredictionModel;
 use App\Services\Prediction\Calibration\CalibrationReportService;
 use App\Services\Prediction\Calibration\ModelComparisonService;
+use App\Services\Prediction\Evaluation\LiveValidationService;
 use App\Services\Prediction\Validation\ModelLifecycleService;
 use App\Services\Prediction\Validation\ShadowComparisonService;
 use App\Services\Prediction\Validation\SignificanceService;
@@ -21,6 +22,7 @@ class PredictionModelController extends Controller
         protected ShadowComparisonService $shadow,
         protected ValidationReportService $validation,
         protected SignificanceService $significance,
+        protected LiveValidationService $live,
     ) {
     }
 
@@ -29,6 +31,7 @@ class PredictionModelController extends Controller
         return view('admin.predictions.models.index', [
             'models' => $this->comparison->models(),
             'versions' => $this->comparison->versions(),
+            'live' => $this->live->summary(),
             'minimumSample' => (int) config('evaluation.minimum_sample_size', 100),
         ]);
     }
@@ -104,5 +107,12 @@ class PredictionModelController extends Controller
         $this->lifecycle->retire($model, $request->user(), $request->input('reason'));
 
         return back()->with('success', "{$model->version} retired.");
+    }
+
+    public function rollback(PredictionModel $model, Request $request)
+    {
+        $this->lifecycle->rollback($model, $request->user(), $request->input('reason'));
+
+        return back()->with('success', "Production rolled back to {$model->version}.");
     }
 }

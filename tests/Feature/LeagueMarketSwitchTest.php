@@ -29,12 +29,14 @@ class LeagueMarketSwitchTest extends TestCase
         $this->migratePhase1ASchema();
         $this->seed(PredictionCategorySeeder::class);
 
-        PredictionModel::create([
-            'name' => 'v1.0.0',
-            'version' => 'v1.0.0',
-            'active' => true,
-            'status' => PredictionModel::STATUS_ACTIVE,
-        ]);
+        PredictionModel::updateOrCreate(
+            ['version' => 'v1.0.0'],
+            [
+                'name' => 'v1.0.0',
+                'active' => true,
+                'status' => PredictionModel::STATUS_ACTIVE,
+            ],
+        );
     }
 
     protected function engine(): \App\Services\Prediction\PredictionEngine

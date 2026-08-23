@@ -16,10 +16,12 @@ class ApiFootballServiceEnhanced
     protected string $baseUrl;
     protected string $apiKey;
 
-    public function __construct()
-    {
-        $this->baseUrl = 'https://v3.football.api-sports.io';
+    public function __construct(
+        protected ?ApiClient $client = null,
+    ) {
+        $this->baseUrl = config('services.api_football.base_url', 'https://v3.football.api-sports.io');
         $this->apiKey = config('services.api_football.key');
+        $this->client ??= new ApiClient(app(SystemEventService::class));
     }
 
     protected function request(string $endpoint, array $params = [], bool $noCache = false): ?array
@@ -27,21 +29,17 @@ class ApiFootballServiceEnhanced
         $cacheKey = 'af_' . md5($endpoint . json_encode($params));
         if (!$noCache && $cached = Cache::get($cacheKey)) return $cached;
 
-        try {
-            $response = Http::timeout(25)->withHeaders([
-                'x-rapidapi-key' => $this->apiKey,
-            ])->get($this->baseUrl . $endpoint, $params);
+        $data = $this->client->get($this->baseUrl . $endpoint, $params, [
+            'x-rapidapi-key' => $this->apiKey,
+        ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                if (!$noCache) Cache::put($cacheKey, $data, now()->addMinutes(30));
-                return $data;
-            }
-            return null;
-        } catch (\Exception $e) {
-            Log::error('API-Football: ' . $e->getMessage());
-            return null;
+        if ($data !== null) {
+            if (!$noCache) Cache::put($cacheKey, $data, now()->addMinutes(30));
+            return $data;
         }
+
+        Log::error('API-Football request failed: ' . $endpoint);
+        return null;
     }
 
     // ═══ FIXTURES ═══════════════════════════════════════
@@ -61,6 +59,28 @@ class ApiFootballServiceEnhanced
     public function getFixturesByLeagueSeason(int $league, int $season): ?array
     {
         return $this->request('/fixtures', ['league' => $league, 'season' => $season]);
+    }
+
+    /**
+     * Search available leagues (used by the admin "Add League" discoverer).
+     */
+    public function getLeagues(?string $search = null, ?string $country = null, ?int $season = null): ?array
+    {
+        $params = [];
+
+        if ($search) {
+            $params['search'] = $search;
+        }
+
+        if ($country) {
+            $params['country'] = $country;
+        }
+
+        if ($season) {
+            $params['season'] = $season;
+        }
+
+        return $this->request('/leagues', $params, true);
     }
 
     /** Get one fixture by ID */
@@ -196,6 +216,18 @@ class ApiFootballServiceEnhanced
     public function getRemainingRequests(): int
     {
         $s = $this->getStatus();
-        return $s['response']['requests']['limit_day'] - ($s['response']['requests']['current'] ?? 0) ?? 0;
+
+        $requests = $s['response']['requests'] ?? null;
+
+        // The status endpoint can return a rate-limit or error payload without
+        // a 'requests' block — guard against it rather than crashing.
+        if (! is_array($requests)) {
+            return 0;
+        }
+
+        $limit = (int) ($requests['limit_day'] ?? 0);
+        $current = (int) ($requests['current'] ?? 0);
+
+        return max(0, $limit - $current);
     }
 }

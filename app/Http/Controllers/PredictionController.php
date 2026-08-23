@@ -151,6 +151,11 @@ class PredictionController extends Controller
         return $this->market('correct_score');
     }
 
+    public function oneXTwo()
+    {
+        return $this->market('1x2');
+    }
+
     public function tomorrow()
     {
         $fixtures = Fixture::with('predictions')

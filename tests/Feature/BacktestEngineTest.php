@@ -6,6 +6,7 @@ use App\Models\BacktestPrediction;
 use App\Models\BacktestRun;
 use App\Models\Fixture;
 use App\Models\Prediction;
+use App\Models\PredictionModel;
 use App\Services\Prediction\Confidence\ConfidenceEngine;
 use App\Services\Prediction\Evaluation\BacktestDataCollector;
 use App\Services\Prediction\Evaluation\BacktestEngine;
@@ -25,6 +26,16 @@ class BacktestEngineTest extends TestCase
     {
         parent::setUp();
         $this->migratePhase1ASchema();
+
+        // BacktestEngine (Phase 1H) requires the requested model version to be
+        // registered — seed the default v1.0.0.
+        PredictionModel::create([
+            'name' => 'Esurebet Statistical Ensemble',
+            'version' => 'v1.0.0',
+            'configuration' => null,
+            'active' => true,
+            'status' => 'candidate',
+        ]);
     }
 
     protected function engine(): BacktestEngine
@@ -179,5 +190,82 @@ class BacktestEngineTest extends TestCase
         $this->engine()->run($run);
 
         $this->assertSame(1, $run->fresh()->total_fixtures);
+    }
+
+    public function test_model_version_integrity_fails_on_unknown_version(): void
+    {
+        $this->makeCompletedFixture();
+
+        $run = $this->makeRun(['model_version' => 'v9.9.9-does-not-exist']);
+
+        $this->engine()->run($run);
+
+        $this->assertSame(BacktestRun::STATUS_FAILED, $run->fresh()->status);
+        $this->assertStringContainsString('not registered', $run->fresh()->error);
+    }
+
+    public function test_v1_0_0_records_raw_and_calibrated_probabilities_as_identical(): void
+    {
+        $this->makeCompletedFixture();
+
+        $run = $this->makeRun(['model_version' => 'v1.0.0']);
+        $this->engine()->run($run);
+
+        $predictions = BacktestPrediction::where('backtest_run_id', $run->id)->get();
+        $this->assertNotEmpty($predictions);
+
+        foreach ($predictions as $p) {
+            $this->assertNotNull($p->raw_probability);
+            $this->assertNotNull($p->calibrated_probability);
+            $this->assertSame($p->raw_probability, $p->calibrated_probability);
+            $this->assertNull($p->calibration_version);
+        }
+    }
+
+    public function test_v1_1_0_walk_forward_calibration_is_applied_after_minimum_samples(): void
+    {
+        PredictionModel::create([
+            'name' => 'Calibrated Ensemble',
+            'version' => 'v1.1.0',
+            'configuration' => [
+                // Pre-trained params are NOT used by the walk-forward backtest;
+                // their presence just marks v1.1.0 as a calibrated model.
+                'calibration' => ['over_1_5' => ['method' => 'platt', 'a' => 0.15, 'b' => 0.89, 'isotonic' => []]],
+            ],
+        ]);
+
+        // 31 chronological fixtures of the single over_1_5 market. Fixture 31
+        // has 30 prior resolved samples, so its calibrator gets fitted.
+        for ($i = 0; $i < 31; $i++) {
+            $this->makeCompletedFixture([
+                'api_fixture_id' => 4000 + $i,
+                'home_team_id' => 500 + $i,
+                'away_team_id' => 600 + $i,
+                'home_goals' => ($i % 3 === 0) ? 0 : 2,
+                'away_goals' => ($i % 2 === 0) ? 1 : 1,
+                'match_date' => Carbon::parse('2025-01-01')->addDays($i),
+            ]);
+        }
+
+        $run = $this->makeRun(['model_version' => 'v1.1.0', 'markets' => ['over_1_5']]);
+        $this->engine()->run($run);
+
+        $this->assertSame(BacktestRun::STATUS_COMPLETED, $run->fresh()->status);
+
+        $predictions = BacktestPrediction::where('backtest_run_id', $run->id)
+            ->orderBy('predicted_at')
+            ->get();
+
+        $this->assertSame(31, $predictions->count());
+
+        // Early fixtures: not enough history to fit a calibrator.
+        $this->assertNull($predictions[0]->calibration_version);
+
+        // Later fixtures: walk-forward calibration has been applied.
+        $this->assertSame('walk-forward', $predictions->last()->calibration_version);
+        $this->assertNotNull($predictions->last()->raw_probability);
+        $this->assertNotNull($predictions->last()->calibrated_probability);
+        // The probability the model bets with is the CALIBRATED probability.
+        $this->assertSame($predictions->last()->calibrated_probability, $predictions->last()->probability);
     }
 }

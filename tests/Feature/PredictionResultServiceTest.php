@@ -6,6 +6,7 @@ use App\Models\Fixture;
 use App\Models\Prediction;
 use App\Services\Prediction\Evaluation\MarketResultResolver;
 use App\Services\Prediction\Evaluation\PredictionResultService;
+use App\Services\Prediction\FeatureProvenanceService;
 use App\Services\Prediction\Admin\AuditLogger;
 use Tests\Concerns\InteractsWithPredictionSchema;
 use Tests\TestCase;
@@ -22,7 +23,7 @@ class PredictionResultServiceTest extends TestCase
 
     protected function service(): PredictionResultService
     {
-        return new PredictionResultService(new MarketResultResolver(), new AuditLogger());
+        return new PredictionResultService(new MarketResultResolver(), new AuditLogger(), new FeatureProvenanceService());
     }
 
     protected function makeFixture(string $status, ?int $homeGoals, ?int $awayGoals): Fixture
@@ -69,6 +70,23 @@ class PredictionResultServiceTest extends TestCase
         $this->assertSame('won', $prediction->model_result);
         $this->assertSame('2-1', $prediction->actual_score);
         $this->assertNotNull($prediction->resolved_at);
+    }
+
+    public function test_settlement_separates_model_public_and_settlement_results(): void
+    {
+        $fixture = $this->makeFixture('FT', 2, 1);
+
+        // Model says home, admin override says draw -> model loses, override loses (2-1 is home win).
+        $prediction = $this->makePrediction($fixture, '1x2', 'home', 'draw');
+
+        $this->assertSame('lost', $this->service()->resolvePrediction($prediction, $fixture));
+
+        $prediction->refresh();
+        $this->assertSame('won', $prediction->model_result);       // model 'home' won
+        $this->assertSame('lost', $prediction->override_result);   // override 'draw' lost
+        $this->assertSame('lost', $prediction->public_result);     // what public saw (override) lost
+        $this->assertSame('lost', $prediction->settlement_result); // final settlement lost
+        $this->assertNotNull($prediction->settled_at);
     }
 
     public function test_resolves_multi_market(): void

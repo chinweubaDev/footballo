@@ -9,6 +9,10 @@ use App\Http\Controllers\Admin\PredictionPerformanceController;
 use App\Http\Controllers\Admin\PredictionModelController;
 use App\Http\Controllers\Admin\PredictionGateController;
 use App\Http\Controllers\Admin\BacktestController;
+use App\Http\Controllers\Admin\ValidationMatrixController;
+use App\Http\Controllers\Admin\LeagueMarketGateController;
+use App\Http\Controllers\Admin\LiveValidationController;
+use App\Http\Controllers\Admin\SystemController;
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/live-scores', [App\Http\Controllers\HomeController::class, 'liveScores'])->name('live-scores');
@@ -35,6 +39,7 @@ Route::get('/predictions/over-2-5', [App\Http\Controllers\PredictionController::
 Route::get('/predictions/double-chance', [App\Http\Controllers\PredictionController::class, 'doubleChance'])->name('predictions.double-chance');
 Route::get('/predictions/bts', [App\Http\Controllers\PredictionController::class, 'bts'])->name('predictions.bts');
 Route::get('/predictions/draw', [App\Http\Controllers\PredictionController::class, 'draw'])->name('predictions.draw');
+Route::get('/predictions/1x2', [App\Http\Controllers\PredictionController::class, 'oneXTwo'])->name('predictions.1x2');
 Route::get('/predictions/tomorrow', [App\Http\Controllers\PredictionController::class, 'tomorrow'])->name('predictions.tomorrow');
 Route::get('/predictions/correct-score', [App\Http\Controllers\PredictionController::class, 'correctScore'])->name('predictions.correct-score');
 Route::get('/predictions/{league:slug}', [App\Http\Controllers\PredictionController::class, 'league'])->name('predictions.league');
@@ -98,8 +103,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // Prediction Control Center
     Route::get('/predictions', [PredictionAdminController::class, 'dashboard'])->name('predictions');
+    Route::get('/predictions/live', [PredictionAdminController::class, 'live'])->name('predictions.live');
     Route::get('/predictions/list', [PredictionAdminController::class, 'index'])->name('predictions.list');
     Route::get('/predictions/leagues', [PredictionLeagueController::class, 'index'])->name('predictions.leagues');
+    Route::get('/predictions/leagues/discover', [PredictionLeagueController::class, 'discover'])->name('predictions.leagues.discover');
+    Route::post('/predictions/leagues/import', [PredictionLeagueController::class, 'import'])->name('predictions.leagues.import');
     Route::post('/predictions/leagues/{league}/toggle', [PredictionLeagueController::class, 'toggleEnabled'])->name('predictions.leagues.toggle');
     Route::post('/predictions/leagues/{league}/settings', [PredictionLeagueController::class, 'updateSettings'])->name('predictions.leagues.settings');
     Route::get('/predictions/markets', [PredictionMarketController::class, 'index'])->name('predictions.markets');
@@ -109,6 +117,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     // Model performance dashboard
     Route::get('/predictions/performance', [PredictionPerformanceController::class, 'index'])->name('predictions.performance');
 
+    // Phase 1M — live validation, model comparison & evidence analysis
+    Route::get('/predictions/live-validation', [LiveValidationController::class, 'summary'])->name('predictions.live-validation');
+    Route::get('/predictions/live-validation/report', [LiveValidationController::class, 'report'])->name('predictions.live-validation.report');
+    Route::get('/predictions/performance/markets', [LiveValidationController::class, 'markets'])->name('predictions.performance.markets');
+    Route::get('/predictions/performance/leagues', [LiveValidationController::class, 'leagues'])->name('predictions.performance.leagues');
+    Route::get('/predictions/performance/matrix', [LiveValidationController::class, 'matrix'])->name('predictions.performance.matrix');
+    Route::get('/predictions/performance/export', [LiveValidationController::class, 'export'])->name('predictions.performance.export');
+
     // Model versions & comparison
     Route::get('/predictions/models', [PredictionModelController::class, 'index'])->name('predictions.models');
     Route::get('/predictions/models/compare', [PredictionModelController::class, 'compare'])->name('predictions.models.compare');
@@ -117,15 +133,29 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::post('/predictions/models/{model}/reject', [PredictionModelController::class, 'reject'])->name('predictions.models.reject');
     Route::post('/predictions/models/{model}/activate', [PredictionModelController::class, 'activate'])->name('predictions.models.activate');
     Route::post('/predictions/models/{model}/retire', [PredictionModelController::class, 'retire'])->name('predictions.models.retire');
+    Route::post('/predictions/models/{model}/rollback', [PredictionModelController::class, 'rollback'])->name('predictions.models.rollback');
 
     // Publication gate optimization (Phase 1G.1)
     Route::get('/predictions/gates', [PredictionGateController::class, 'index'])->name('predictions.gates');
     Route::post('/predictions/gates/{category}/approve', [PredictionGateController::class, 'approve'])->name('predictions.gates.approve');
     Route::post('/predictions/gates/{category}/reject', [PredictionGateController::class, 'reject'])->name('predictions.gates.reject');
 
+    // League x market publication gate matrix (Phase 1I)
+    Route::get('/predictions/settings/matrix', [LeagueMarketGateController::class, 'index'])->name('predictions.settings.matrix');
+    Route::post('/predictions/settings/matrix/{league}/{marketCode}', [LeagueMarketGateController::class, 'update'])->name('predictions.settings.matrix.update');
+
     // Shadow mode & multi-league validation
     Route::get('/predictions/shadow', [PredictionModelController::class, 'shadow'])->name('predictions.shadow');
     Route::get('/predictions/validation', [PredictionModelController::class, 'validation'])->name('predictions.validation');
+
+    // Phase 1G.2 full League x Market x Model matrix
+    Route::get('/predictions/validation/matrix', [ValidationMatrixController::class, 'matrix'])->name('predictions.validation.matrix');
+    Route::get('/predictions/validation/ranking', [ValidationMatrixController::class, 'ranking'])->name('predictions.validation.ranking');
+    Route::get('/predictions/validation/candidates', [ValidationMatrixController::class, 'candidates'])->name('predictions.validation.candidates');
+    Route::post('/predictions/validation/candidates/decide', [ValidationMatrixController::class, 'decide'])->name('predictions.validation.candidates.decide');
+
+    // Phase 1P multi-season validation
+    Route::get('/predictions/validation/multi-season', [ValidationMatrixController::class, 'multiSeason'])->name('predictions.validation.multi-season');
 
     // Historical backtesting
     Route::get('/predictions/backtesting', [BacktestController::class, 'index'])->name('predictions.backtesting.index');
@@ -191,4 +221,12 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     // API helpers (JSON)
     Route::get('/api/countries', [AdminController::class, 'getCountries'])->name('countries');
     Route::get('/api/leagues', [AdminController::class, 'getLeagues'])->name('leagues');
+
+    // System monitoring (Phase 1K)
+    Route::get('/system/api', [SystemController::class, 'api'])->name('system.api');
+    Route::get('/system/alerts', [SystemController::class, 'alerts'])->name('system.alerts');
+    Route::get('/system/pipeline', [SystemController::class, 'pipeline'])->name('system.pipeline');
+    Route::get('/system/queue', [SystemController::class, 'queue'])->name('system.queue');
+    Route::post('/system/queue/{id}/retry', [SystemController::class, 'retryFailedJob'])->name('system.queue.retry');
+    Route::post('/system/queue/{id}/forget', [SystemController::class, 'forgetFailedJob'])->name('system.queue.forget');
 });

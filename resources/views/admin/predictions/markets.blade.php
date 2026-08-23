@@ -43,21 +43,31 @@
                 <form method="POST" action="{{ route('admin.predictions.markets.settings', $market) }}" class="grid grid-cols-2 md:grid-cols-5 gap-3 items-end border-t border-gray-100 pt-4">
                     @csrf
                     <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Min Probability</label>
+                        <input type="number" name="min_probability" value="{{ $market->min_probability ?? '' }}" min="0" max="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="—">
+                    </div>
+                    <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Min Confidence</label>
                         <input type="number" name="min_confidence" value="{{ $market->min_confidence }}" min="0" max="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Min Sample Size</label>
+                        <input type="number" name="minimum_sample_size" value="{{ $market->minimum_sample_size }}" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Sort Order</label>
                         <input type="number" name="sort_order" value="{{ $market->sort_order }}" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
-                    <div class="flex items-center">
+                    <div>
+                        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700">Save</button>
+                    </div>
+                    <div class="col-span-2 md:col-span-5 flex items-center gap-2">
                         <label class="inline-flex items-center text-sm text-gray-700">
                             <input type="checkbox" name="homepage_enabled" value="1" {{ $market->homepage_enabled ? 'checked' : '' }} class="rounded border-gray-300 mr-1"> Homepage
                         </label>
-                    </div>
-                    <div></div>
-                    <div>
-                        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-green-700">Save</button>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $market->gate_status === 'approved' ? 'bg-green-100 text-green-800' : ($market->gate_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700') }}">
+                            Gate: {{ strtoupper($market->gate_status ?? 'none') }}
+                        </span>
                     </div>
                 </form>
             </div>

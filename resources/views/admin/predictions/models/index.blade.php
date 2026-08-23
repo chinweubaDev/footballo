@@ -79,6 +79,48 @@
             </div>
         </div>
 
+        <!-- Live evidence (Phase 1M) -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Live Evidence</h2>
+                <p class="text-xs text-gray-500">Resolved live predictions. Labels describe sample size — they are not significance guarantees.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Model</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Resolved</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Wins</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Losses</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Accuracy</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Brier</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Log Loss</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">ECE</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Evidence</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($live['models'] ?? [] as $m)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm font-semibold text-gray-900">{{ $m['model_version'] }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-700">{{ $m['resolved'] }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-green-700">{{ $m['won'] }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-red-700">{{ $m['lost'] }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900">{{ $fmt($m['accuracy'] ?? null, '%') }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900">{{ $fmt($m['brier_score'] ?? null, '', 4) }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900">{{ $fmt($m['log_loss'] ?? null, '', 4) }}</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-900">{{ $fmt($m['calibration_error'] ?? null) }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-700">{{ $m['evidence'] }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="9" class="px-6 py-8 text-center text-gray-400">NO LIVE EVIDENCE YET.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Per-market comparison across versions -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">

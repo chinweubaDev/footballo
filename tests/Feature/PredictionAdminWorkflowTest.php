@@ -31,7 +31,10 @@ class PredictionAdminWorkflowTest extends TestCase
         $this->migratePhase1ASchema();
         $this->seed(PredictionCategorySeeder::class);
 
-        PredictionModel::create(['name' => 'Esurebet Statistical Ensemble', 'version' => 'v1.0.0', 'active' => true]);
+        PredictionModel::updateOrCreate(
+            ['version' => 'v1.0.0'],
+            ['name' => 'Esurebet Statistical Ensemble', 'active' => true],
+        );
 
         League::create([
             'api_football_league_id' => 39,

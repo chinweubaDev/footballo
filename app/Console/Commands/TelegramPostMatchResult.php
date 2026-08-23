@@ -45,8 +45,8 @@ class TelegramPostMatchResult extends Command
         $confidence = (int) $prediction->confidence;
         $odds = $prediction->odds ? number_format((float) $prediction->odds, 2) : 'N/A';
 
-        // Determine if prediction won
-        $won = $prediction->status === 'won';
+        // Determine if prediction won (settlement result lives in `result`).
+        $won = ($prediction->result ?? $prediction->status) === 'won';
 
         $resultEmoji = $won ? '✅✅✅' : '❌❌❌';
         $resultText = $won ? 'WON ✅' : 'LOST ❌';

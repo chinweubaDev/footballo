@@ -5,6 +5,8 @@ namespace App\Services\Prediction\Evaluation;
 use App\Models\Fixture;
 use App\Models\Prediction;
 use App\Services\Prediction\Admin\AuditLogger;
+use App\Services\Prediction\FeatureProvenanceService;
+use App\Services\SystemEventService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -34,6 +36,8 @@ class PredictionResultService
     public function __construct(
         protected MarketResultResolver $resolver,
         protected AuditLogger $audit,
+        protected FeatureProvenanceService $provenance,
+        protected ?SystemEventService $events = null,
     ) {
     }
 
@@ -55,10 +59,26 @@ class PredictionResultService
             return self::PENDING;
         }
 
+        // API result validation: never settle an ambiguous scoreline. Leave
+        // the prediction for manual review rather than guessing.
+        if ($state === self::TERMINAL && $this->ambiguousScore($fixture)) {
+            $prediction->update(['settlement_status' => 'pending_review']);
+
+            $this->events?->ambiguousResult(
+                "Ambiguous scoreline for fixture {$fixture->id}: "
+                .var_export($fixture->home_goals, true).'-'.var_export($fixture->away_goals, true),
+                ['fixture_id' => $fixture->id, 'prediction_id' => $prediction->id],
+            );
+
+            return self::PENDING;
+        }
+
+        $provenanceStatus = $this->provenance->check($prediction)['status'];
+
         $score = "{$fixture->home_goals}-{$fixture->away_goals}";
 
         if ($state === self::VOID) {
-            $this->persist($prediction, self::VOID, self::VOID, null, $score, $fixture->status);
+            $this->persist($prediction, self::VOID, self::VOID, null, $score, $fixture->status, $provenanceStatus);
 
             return self::VOID;
         }
@@ -76,7 +96,7 @@ class PredictionResultService
         // with a reason rather than being guessed via text matching.
         $voidReason = $effective === self::VOID ? 'unresolvable_selection' : null;
 
-        $this->persist($prediction, $effective, $model, $override, $score, $voidReason);
+        $this->persist($prediction, $effective, $model, $override, $score, $voidReason, $provenanceStatus);
 
         return $effective;
     }
@@ -161,6 +181,23 @@ class PredictionResultService
         return self::TERMINAL;
     }
 
+    /**
+     * A terminal fixture whose scoreline is structurally invalid must not be
+     * settled (SETTLEMENT_PENDING_REVIEW). Null goals are handled by
+     * fixtureState() — this only catches malformed values that survived.
+     */
+    protected function ambiguousScore(Fixture $fixture): bool
+    {
+        $home = $fixture->home_goals;
+        $away = $fixture->away_goals;
+
+        if (! is_numeric($home) || ! is_numeric($away)) {
+            return true;
+        }
+
+        return (int) $home < 0 || (int) $away < 0;
+    }
+
     protected function resolveSelection(?string $marketCode, ?string $selection, Fixture $fixture): string
     {
         if ($marketCode === null || $selection === null) {
@@ -180,6 +217,7 @@ class PredictionResultService
         ?string $override,
         string $score,
         ?string $voidReason,
+        string $provenanceStatus,
     ): void {
         $corrections = $prediction->result_corrections ?? [];
 
@@ -207,8 +245,13 @@ class PredictionResultService
             'result' => $effective,
             'model_result' => $model,
             'override_result' => $override,
+            'public_result' => $effective,
+            'settlement_result' => $effective,
             'actual_score' => $score,
             'resolved_at' => now(),
+            'settled_at' => now(),
+            'settlement_status' => 'settled',
+            'provenance_status' => $provenanceStatus,
             'void_reason' => $voidReason,
             'result_corrections' => $corrections,
         ]);

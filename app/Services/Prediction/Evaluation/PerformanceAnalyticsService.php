@@ -427,8 +427,9 @@ class PerformanceAnalyticsService
 
         Prediction::query()
             ->whereNotNull('result')
+            ->where(fn ($q) => $q->whereNull('provenance_status')->orWhere('provenance_status', '!=', 'invalid'))
             ->select([
-                'fixture_id', 'market_code', 'probability', 'confidence',
+                'id', 'fixture_id', 'market_code', 'probability', 'confidence',
                 'model_version', 'league_id', 'data_quality_score', 'result', 'status',
             ])
             ->chunkById(500, function ($predictions) use (&$rows) {

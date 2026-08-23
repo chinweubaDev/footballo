@@ -5,9 +5,14 @@
 @section('content')
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Prediction Leagues</h1>
-            <p class="text-gray-600">Control which leagues receive predictions. Lower priority = higher priority.</p>
+        <div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Prediction Leagues</h1>
+                <p class="text-gray-600">Control which leagues receive predictions. Lower priority = higher priority.</p>
+            </div>
+            <a href="{{ route('admin.predictions.leagues.discover') }}" class="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700">
+                <i class="fas fa-plus mr-1"></i> Discover Leagues
+            </a>
         </div>
 
         @include('admin.partials.prediction-nav')
@@ -79,6 +84,10 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Min Confidence</label>
                         <input type="number" name="prediction_min_confidence" value="{{ $league->prediction_min_confidence }}" min="0" max="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Min Probability</label>
+                        <input type="number" name="prediction_min_probability" value="{{ $league->prediction_min_probability ?? '' }}" min="0" max="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="—">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Priority</label>

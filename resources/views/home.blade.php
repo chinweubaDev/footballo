@@ -202,7 +202,7 @@
                                         </td>
                                         <td class="px-6 py-4 text-center" data-label="Score">
                                             @if(in_array($fixture->status, ['FT', 'AET', 'PEN']))
-                                                @php $scoreWon = $prediction->status === 'won'; @endphp
+                                                @php $scoreWon = ($prediction->result ?? $prediction->status) === 'won'; @endphp
                                                 <span class="inline-flex items-center px-3 py-1.5 rounded-xl font-black text-base {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">
                                                     {{ $fixture->home_goals }} <span class="mx-0.5 text-xs opacity-60">–</span> {{ $fixture->away_goals }}
                                                 </span>
@@ -263,7 +263,7 @@
                             ENJOY <span class="text-emerald-500">Esurebet</span> PREMIUM TIPS!
                         </h2>
                         <p class="text-lg text-slate-400 leading-relaxed font-medium">
-                            Make maximum <span class="text-white font-bold">PROFITS</span> from our sure <span class="text-emerald-400 font-black">"2 to 5"</span> daily Football Predictions. Enjoy up to <span class="text-emerald-500 font-extrabold">95% winning</span> with our premium plan...
+                            Make maximum <span class="text-white font-bold">PROFITS</span> from our <span class="text-emerald-400 font-black">"2 to 5"</span> daily Football Predictions. Access high-probability picks built from our most validated markets.
                         </p>
                     </div>
                     
@@ -290,9 +290,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12" data-aos="fade-up">
             <div class="max-w-2xl">
-                <h2 class="text-sm font-black text-primary-600 uppercase tracking-[0.2em] mb-3">Guaranteed Insights</h2>
+                <h2 class="text-sm font-black text-primary-600 uppercase tracking-[0.2em] mb-3">Statistical Insights</h2>
                 <h3 class="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4">Sure Picks Tips</h3>
-                <p class="text-lg text-slate-500">Hand-picked selections from our top analysts with the highest probability of winning today.</p>
+                <p class="text-lg text-slate-500">The strongest qualifying 1X2 predictions ranked by calibrated probability, confidence and historical reliability.</p>
             </div>
             <a href="{{ route('predictions') }}" class="mt-6 md:mt-0 inline-flex items-center text-primary-600 font-bold hover:text-primary-700 transition-colors">
                 View All Sure Picks <i class="fas fa-arrow-right ml-2 text-sm"></i>
@@ -330,7 +330,7 @@
                             </td>
                             <td class="px-6 py-4 text-center" data-label="Score">
                                 @if(in_array($tip->status, ['FT','AET','PEN']))
-                                    @php $spPred = $tip->predictions->first(); $scoreWon = $spPred && $spPred->status === 'won'; @endphp
+                                    @php $spPred = $tip->predictions->first(); $scoreWon = $spPred && ($spPred->result ?? $spPred->status) === 'won'; @endphp
                                     <span class="font-black px-3 py-1.5 rounded-lg {{ $scoreWon ? 'bg-green-600 text-white' : 'bg-slate-900 text-white' }}">{{ $tip->home_goals }} – {{ $tip->away_goals }}</span>
                                 @else
                                     <span class="text-slate-300 font-bold">––</span>
@@ -353,7 +353,7 @@
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-slate-400">
                                 <i class="fas fa-search text-3xl mb-3 block opacity-30"></i>
-                                New Sure Picks will appear when qualified 1X2 predictions become available.
+                                No qualifying Sure Pick currently available.
                             </td>
                         </tr>
                         @endforelse
@@ -373,7 +373,7 @@
         </h3>
         <div class="flex items-center space-x-2">
             <span class="w-2 h-2 rounded-full bg-green-500"></span>
-            <span class="text-xs font-bold text-slate-500 uppercase">95% ACCURACY RATE</span>
+            <span class="text-xs font-bold text-slate-500 uppercase">PROFESSIONALLY ANALYSED</span>
         </div>
     </div>
     

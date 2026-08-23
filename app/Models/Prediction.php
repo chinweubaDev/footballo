@@ -33,6 +33,13 @@ class Prediction extends Model
         'market_code',
         'selection',
         'probability',
+        'raw_probability',
+        'calibrated_probability',
+        'calibration_version',
+        'gate_probability',
+        'gate_confidence',
+        'configuration_version',
+        'publication_reason',
         'model_version',
         'model_id',
         'original_selection',
@@ -46,16 +53,24 @@ class Prediction extends Model
         'admin_featured',
         'locked_at',
         'published_at',
+        'prediction_generated_at',
+        'feature_data_timestamp',
+        'provenance_status',
         'explanation',
         'explanation_status',
         'league_id',
         'data_quality_score',
+        'data_quality_flags',
         'prediction_data',
         'result',
         'actual_score',
         'resolved_at',
         'model_result',
         'override_result',
+        'public_result',
+        'settlement_result',
+        'settled_at',
+        'settlement_status',
         'void_reason',
         'result_corrections',
     ];
@@ -67,14 +82,22 @@ class Prediction extends Model
             'is_premium' => 'boolean',
             'is_maxodds' => 'boolean',
             'probability' => 'decimal:2',
+            'raw_probability' => 'decimal:2',
+            'calibrated_probability' => 'decimal:2',
+            'gate_probability' => 'integer',
+            'gate_confidence' => 'integer',
+            'settled_at' => 'datetime',
             'featured' => 'boolean',
             'admin_featured' => 'boolean',
             'featured_priority' => 'integer',
             'featured_until' => 'datetime',
             'locked_at' => 'datetime',
             'published_at' => 'datetime',
+            'prediction_generated_at' => 'datetime',
+            'feature_data_timestamp' => 'datetime',
             'overridden_at' => 'datetime',
             'data_quality_score' => 'integer',
+            'data_quality_flags' => 'array',
             'prediction_data' => 'array',
             'resolved_at' => 'datetime',
             'result_corrections' => 'array',
@@ -159,6 +182,15 @@ class Prediction extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    /**
+     * Scope: hide predictions whose odds are below the public display floor.
+     * Predictions without odds are kept (nothing to compare against).
+     */
+    public function scopePublicOdds($query, float $min = 1.10)
+    {
+        return $query->where(fn ($q) => $q->whereNull('odds')->orWhere('odds', '>=', $min));
     }
 
     /**

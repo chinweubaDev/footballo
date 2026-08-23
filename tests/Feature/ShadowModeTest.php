@@ -43,11 +43,13 @@ class ShadowModeTest extends TestCase
             'auto_publish' => true,
         ]);
 
-        $this->v100 = PredictionModel::create([
-            'name' => 'v1.0.0',
-            'version' => 'v1.0.0',
-            'active' => true,
-        ]);
+        $this->v100 = PredictionModel::updateOrCreate(
+            ['version' => 'v1.0.0'],
+            [
+                'name' => 'v1.0.0',
+                'active' => true,
+            ],
+        );
 
         $this->v110 = PredictionModel::create([
             'name' => 'v1.1.0',
